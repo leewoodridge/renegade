@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
 
 UNIT Menus3;
@@ -14,6 +10,9 @@ USES
 PROCEDURE DoChangeMenu(VAR Done: BOOLEAN; VAR NewMenuCmd: ASTR; Cmd: CHAR; CONST MenuOption: Str50);
 
 IMPLEMENTATION
+
+Uses
+  SysUtils;
 
 PROCEDURE DoChangeMenu(VAR Done: BOOLEAN; VAR NewMenuCmd: ASTR; Cmd: CHAR; CONST MenuOption: Str50);
 VAR

@@ -1,8 +1,39 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
+{*******************************************************}
+{                                                       }
+{   Renegade BBS                                        }
+{                                                       }
+{   Copyright (c) 1990-2013 The Renegade Dev Team       }
+{   Copyleft  (â†„) 2016 Renegade BBS                     }
+{                                                       }
+{   This file is part of Renegade BBS                   }
+{                                                       }
+{   Renegade is free software: you can redistribute it  }
+{   and/or modify it under the terms of the GNU General }
+{   Public License as published by the Free Software    }
+{   Foundation, either version 3 of the License, or     }
+{   (at your option) any later version.                 }
+{                                                       }
+{   Renegade is distributed in the hope that it will be }
+{   useful, but WITHOUT ANY WARRANTY; without even the  }
+{   implied warranty of MERCHANTABILITY or FITNESS FOR  }
+{   A PARTICULAR PURPOSE.  See the GNU General Public   }
+{   License for more details.                           }
+{                                                       }
+{   You should have received a copy of the GNU General  }
+{   Public License along with Renegade.  If not, see    }
+{   <http://www.gnu.org/licenses/>.                     }
+{                                                       }
+{*******************************************************}
+{   _______                                  __         }
+{  |   _   .-----.-----.-----.-----.---.-.--|  .-----.  }
+{  |.  l   |  -__|     |  -__|  _  |  _  |  _  |  -__|  }
+{  |.  _   |_____|__|__|_____|___  |___._|_____|_____|  }
+{  |:  |   |                 |_____|                    }
+{  |::.|:. |                                            }
+{  `--- ---'                                            }
+{*******************************************************}
 
-{$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
+{$i Renegade.Common.Defines.inc}
 
 UNIT SplitCha;
 
@@ -73,7 +104,7 @@ BEGIN
         { Print(FString.ChatCall1); }
         lRGLngStr(14,FALSE);
         Counter := 0;
-        Abort := FALSE;
+        AbortRG := FALSE;
         NL;
         REPEAT
           Inc(Counter);
@@ -121,7 +152,7 @@ BEGIN
                ^M : ShutUpChatCall := TRUE;
             END;
           END;
-        UNTIL (Counter = 9) OR (Chatted) OR (Abort) OR (HangUp);
+        UNTIL (Counter = 9) OR (Chatted) OR (AbortRG) OR (HangUp);
         NL;
       END;
       lStatus_Screen(100,'Chat Request: '+Reason,FALSE,Reason);
@@ -235,15 +266,15 @@ BEGIN
   SysopNameLength := ( 80 - Length(General.SysOpName) );
   CLS;
   ANSIG(1,1);
-  Prompt('^4ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ');
+  Prompt('^4ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½');
   ANSIG( ( SysopNameLength - 5 ), 1);
   Prompt('^4[ ^5' + General.SysOpName + ' ^4]');
   ANSIG(1,12);
-  Prompt('^4ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ');
+  Prompt('^4ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½');
   ANSIG(31,12);
   Prompt('^4[ ^5Ctl^4+^5Z for Help ^4]');
   ANSIG(1,23);
-  Prompt('^4ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ');
+  Prompt('^4ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½');
   ANSIG(3,23);
   Prompt('^4[ ^5'+ ThisUser.Name + ' ^4]');
 
@@ -693,7 +724,7 @@ BEGIN
     ELSE IF (S = '/Q') THEN
     BEGIN
       InChat := FALSE;
-      Print('Chat Aborted ...');
+      Print('Chat AbortRGed ...');
     END;
     IF (CFO) THEN
       WriteLn(ChatFile,S);
@@ -823,7 +854,7 @@ BEGIN
         { Print(FString.ChatCall1); }
         lRGLngStr(14,FALSE);
         Counter := 0;
-        Abort := FALSE;
+        AbortRG := FALSE;
         NL;
         REPEAT
           Inc(Counter);
@@ -871,7 +902,7 @@ BEGIN
                ^M : ShutUpChatCall := TRUE;
             END;
           END;
-        UNTIL (Counter = 9) OR (Chatted) OR (Abort) OR (HangUp);
+        UNTIL (Counter = 9) OR (Chatted) OR (AbortRG) OR (HangUp);
         NL;
       END;
       lStatus_Screen(100,'Chat Request: '+Reason,FALSE,Reason);
@@ -1362,7 +1393,7 @@ BEGIN
     ELSE IF (S = '/Q') THEN
     BEGIN
       InChat := FALSE;
-      Print('Chat Aborted ...');
+      Print('Chat AbortRGed ...');
     END;
     IF (CFO) THEN
       WriteLn(ChatFile,S);

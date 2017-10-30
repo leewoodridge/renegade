@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D+,E-,L+,I-,L+,N-,O+,R-,S+,V-}
 
@@ -88,7 +85,7 @@ BEGIN
   REPEAT
     WITH Liner DO
     BEGIN
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
       Print('%CL^5Modem/Node Configuration:');
       NL;
@@ -183,7 +180,7 @@ BEGIN
         'J' : InputWN1('%LFAddress for %C MCI code: ',Address,(SizeOf(Address) - 1),[InterActiveEdit],Changed);
         'R' : BEGIN
                 REPEAT
-                  Abort := FALSE;
+                  AbortRG := FALSE;
                   Next := FALSE;
                   Print('%CL^5Modem configuration - Result Codes');
                   NL;

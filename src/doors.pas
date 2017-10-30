@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 UNIT Doors;
@@ -689,7 +686,7 @@ END;
 PROCEDURE DoDoorFunc(DropFileType: Char; MenuOption: Str50);
 VAR
   Answer: AStr;
-  ReturnCode: SmallInt;
+  ReturnCode: Byte;
   DoorTime: LongInt;
   UseRealName: Boolean;
 BEGIN
@@ -769,4 +766,4 @@ BEGIN
   SysOpLog('Returned on '+DateStr+' at '+TimeStr+'. Spent '+FormattedTime(DoorTime));
 END;
 
-END.
+END.

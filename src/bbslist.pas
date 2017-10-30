@@ -142,7 +142,7 @@ VAR
 BEGIN
   Assign(BBSScriptText,General.MiscPath+'BBSLIST.SCR');
   Reset(BBSScriptText);
-  WHILE NOT EOF(BBSScriptText) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE NOT EOF(BBSScriptText) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     ReadLn(BBSScriptText,Question);
     IF (Question[1] = '[') THEN
@@ -156,42 +156,42 @@ BEGIN
         PRT(Question+' ');
         MPL(SizeOf(BBSList.BBSName) - 1);
         InputMain(BBSList.BBSName,(SizeOf(BBSList.BBSName) - 1),[InterActiveEdit,ColorsAllowed]);
-        Abort := (BBSList.BBSName = '');
+        AbortRG := (BBSList.BBSName = '');
        END
       ELSE IF WhichOne = 'SYSOPNAME' THEN
        BEGIN
         PRT(Question+' ');
         MPL(SizeOf(BBSList.SysOpName) - 1);
         InputMain(BBSList.SysOpName,(SizeOf(BBSList.SysOpName) - 1),[ColorsAllowed,InterActiveEdit]);
-        Abort := (BBSList.SysOpName = '');
+        AbortRG := (BBSList.SysOpName = '');
        END
       ELSE IF WhichOne = 'TELNETURL' THEN
        BEGIN
         Prt(Question+' ');
         MPL(SizeOf(BBSList.TelnetUrl) - 1);
         InputMain(BBSList.TelnetUrl,(SizeOf(BBSList.TelnetUrl) - 1),[ColorsAllowed,InterActiveEdit]);
-        Abort := (BBSList.TelnetUrl = '');
+        AbortRG := (BBSList.TelnetUrl = '');
        END
       ELSE IF WhichOne = 'WEBSITEURL' THEN
        BEGIN
         Prt(Question+' ');
         MPL(SizeOf(BBSList.WebSiteUrl) - 1);
         InputMain(BBSList.WebSiteUrl,(SizeOf(BBSList.WebSiteUrl) - 1),[ColorsAllowed,InterActiveEdit]);
-        {Abort := (BBSList.WebSiteUrl = '');}
+        {AbortRG := (BBSList.WebSiteUrl = '');}
        END
       ELSE IF WhichOne = 'PHONENUMBER' THEN
        BEGIN
         PRT(Question+' ');
         MPL(SizeOf(BBSList.PhoneNumber) - 1);
         InputMain(BBSList.PhoneNumber,(SizeOf(BBSList.PhoneNumber) - 1),[ColorsAllowed,InterActiveEdit]);
-        {Abort := (BBSList.PhoneNumber = '');}
+        {AbortRG := (BBSList.PhoneNumber = '');}
        END
       ELSE IF WhichOne = 'SOFTWARE' THEN
        BEGIN
         PRT(Question+' ');
         MPL(SizeOf(BBSList.Software) - 1);
         InputMain(BBSList.Software,(SizeOf(BBSList.Software) - 1),[ColorsAllowed,InterActiveEdit]);
-        {Abort := (BBSList.Software = '');}
+        {AbortRG := (BBSList.Software = '');}
        END
       ELSE IF WhichOne = 'SOFTWAREVERSION' THEN
        BEGIN
@@ -210,28 +210,28 @@ BEGIN
         PRT(Question+' ');
         MPL(SizeOf(BBSList.Speed) - 1);
         InputMain(BBSList.Speed,(SizeOf(BBSList.Speed) - 1),[ColorsAllowed,InterActiveEdit]);
-        {Abort := (BBSList.Speed = '');}
+        {AbortRG := (BBSList.Speed = '');}
        END
       ELSE IF WhichOne = 'HOURS' THEN
        BEGIN
         PRT(Question+' ');
         MPL(SizeOf(BBSList.Hours) - 1);
         InputMain(BBSList.Hours,(SizeOf(BBSList.Hours) - 1),[ColorsAllowed,InterActiveEdit]);
-        {Abort := (BBSList.Speed = '');}
+        {AbortRG := (BBSList.Speed = '');}
        END
       ELSE IF WhichOne = 'DESCRIPTION' THEN
        BEGIN
         Prt(Question);
         MPL(SizeOf(BBSList.Description) - 1);
         InputMain(BBSList.Description,(SizeOf(BBSList.Description) - 1),[ColorsAllowed,InterActiveEdit]);
-        {Abort := (BBSList.Description = '');}
+        {AbortRG := (BBSList.Description = '');}
        END
       ELSE IF WhichOne = 'DESCRIPTION2' THEN
        BEGIN
         Prt(Question);
         MPL(SizeOf(BBSList.Description2) - 1);
         InputMain(BBSList.Description2,(SizeOf(BBSList.Description2) - 1),[ColorsAllowed,InterActiveEdit]);
-        {Abort := (BBSList.Description2 = '');}
+        {AbortRG := (BBSList.Description2 = '');}
        END
        ELSE IF WhichOne = 'MAXNODES' THEN
        BEGIN
@@ -272,48 +272,48 @@ BEGIN
         Prt(Question+' ');
         MPL(SizeOf(BBSList.SDA) - 1);
         InputMain(BBSList.SDA,(SizeOf(BBSList.SDA) - 1),[ColorsAllowed,InterActiveEdit]);
-        {Abort := (BBSList.xA = '');}
+        {AbortRG := (BBSList.xA = '');}
        END
       ELSE IF WhichOne = 'SDB' THEN
        BEGIN
         Prt(Question+' ');
         MPL(SizeOf(BBSList.SDB) - 1);
         InputMain(BBSList.SDB,(SizeOf(BBSList.SDB) - 1),[ColorsAllowed,InterActiveEdit]);
-        {Abort := (BBSList.xB = '');}
+        {AbortRG := (BBSList.xB = '');}
        END
       ELSE IF WhichOne = 'SDC' THEN
        BEGIN
         Prt(Question+' ');
         MPL(SizeOf(BBSList.SDC) - 1);
         InputMain(BBSList.SDC,(SizeOf(BBSList.SDC) - 1),[ColorsAllowed,InterActiveEdit]);
-        { Abort := (BBSList.xC = '');  }
+        { AbortRG := (BBSList.xC = '');  }
        END
       ELSE IF WhichOne = 'SDD' THEN BEGIN
        Prt(Question+' ');
        MPL(SizeOf(BBSList.SDD) - 1);
        InputMain(BBSList.SDD,(SizeOf(BBSList.SDD) - 1),[ColorsAllowed,InterActiveEdit]);
-       { Abort := (BBSList.xD = '');}
+       { AbortRG := (BBSList.xD = '');}
       END
      ELSE IF WhichOne = 'SDE' THEN
       BEGIN
        Print(Question);
        MPL(SizeOf(BBSList.SDE) - 1);
        InputMain(BBSList.SDE,(SizeOf(BBSList.SDE) - 1),[ColorsAllowed,InterActiveEdit]);
-       {Abort := (BBSList.xE = '');}
+       {AbortRG := (BBSList.xE = '');}
       END
      ELSE IF WhichOne = 'SDF' THEN
       BEGIN
        Print(Question);
        MPL(SizeOf(BBSList.SDF) - 1);
        InputMain(BBSList.SDF,(SizeOf(BBSList.SDF) - 1),[ColorsAllowed,InterActiveEdit]);
-       {Abort := (BBSList.xF = '');}
+       {AbortRG := (BBSList.xF = '');}
       END
       ELSE IF WhichOne = 'SDG' THEN
       BEGIN
 
        MPL(SizeOf(BBSList.SDG) - 1);
        InputWordWoc(Question,BBSList.SDG,[NumbersOnly,InterActiveEdit],1,65535);
-       {Abort := (BBSList.xE = '');}
+       {AbortRG := (BBSList.xE = '');}
       END
      ELSE IF WhichOne = 'SDH' THEN
       BEGIN
@@ -412,7 +412,7 @@ VAR
 BEGIN
   Assign(BBSListFile,General.DataPath+'BBSLIST.DAT');
   Reset(BBSListFile);
-  Abort := FALSE;
+  AbortRG := FALSE;
   OnRec := 1;
   WHILE (OnRec <= FileSize(BBSListFile)) DO
   BEGIN
@@ -489,7 +489,7 @@ BEGIN
     BEGIN
       FillChar(BBSList,SizeOf(BBSList),0);
       BBSListScriptFile(BBSList);
-      IF (NOT Abort) THEN
+      IF (NOT AbortRG) THEN
       BEGIN
         PrintF('BBSNH');
         ReadBuffer('BBSMN');
@@ -532,11 +532,11 @@ BEGIN
   BEGIN
     AllowContinue := FALSE;
     Found := FALSE;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Assign(BBSListFile,General.DataPath+'BBSLIST.DAT');
     Reset(BBSListFile);
     OnRec := 1;
-    WHILE (OnRec <= FileSize(BBSListFile)) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (OnRec <= FileSize(BBSListFile)) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(BBSListFile,(OnRec - 1));
       Read(BBSListFile,BBSList);
@@ -591,9 +591,9 @@ BEGIN
     Reset(BBSListFile);
     AllowContinue := FALSE;
     Found := FALSE;
-    Abort := FALSE;
+    AbortRG := FALSE;
     OnRec := 1;
-    WHILE (NOT Abort) AND (NOT HangUp) DO
+    WHILE (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
 
      PrintF('BBSLEDT');
@@ -610,7 +610,7 @@ BEGIN
       MPL(FileSize(BBSListFile));
       InputLongIntWOC(' Edit which BBS? :',Edit,[],1,FileSize(BBSListFile));
 
-      Abort := (Edit <> 0 );
+      AbortRG := (Edit <> 0 );
 
       IF (Edit <= FileSize(BBSListFile)) AND (Edit > 0) THEN
        BEGIN
@@ -632,7 +632,7 @@ BEGIN
 
         BEGIN
           BBSListScriptFile(BBSList);
-          IF (NOT Abort) THEN
+          IF (NOT AbortRG) THEN
           BEGIN
             PrintF('BBSNH');
             ReadBuffer('BBSMN');
@@ -684,11 +684,11 @@ BEGIN
     Reset(BBSListFile);
     ReadBuffer('BBSMN');
     AllowContinue := TRUE;
-    Abort := FALSE;
+    AbortRG := FALSE;
     PrintF('BBSNH');
     OnRec := 1;
     Cnt := 1;
-    WHILE (OnRec <= FileSize(BBSListFile)) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (OnRec <= FileSize(BBSListFile)) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(BBSListFile,(OnRec - 1));
       Read(BBSListFile,BBSList);
@@ -707,7 +707,7 @@ BEGIN
     END;
     Close(BBSListFile);
     LastError := IOResult;
-    IF (NOT Abort) THEN
+    IF (NOT AbortRG) THEN
       PrintF('BBSNT');
     AllowContinue := FALSE;
     SysOpLog('Viewed the BBS Listing.');
@@ -741,7 +741,7 @@ BEGIN
       MPL(FileSize(BBSListFile));
       InputLongIntWOC(' View which BBS? ',Edit,[],1,FileSize(BBSListFile));
 
-      Abort := (Edit <> 0 );
+      AbortRG := (Edit <> 0 );
 
       IF (Edit <= FileSize(BBSListFile)) AND (Edit > 0) THEN
        BEGIN
@@ -758,9 +758,9 @@ BEGIN
     IF (ReadBuffer('BBSME')) THEN
     BEGIN
       AllowContinue := TRUE;
-      Abort := FALSE;
+      AbortRG := FALSE;
       PrintF('BBSEH');
-      WHILE (NOT Abort) AND (NOT HangUp) DO
+      WHILE (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
       DisplayBuffer(BBSListMCI,@BBSList,Data2);
       PrintF('BBSET');

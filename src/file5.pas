@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
 UNIT File5;
@@ -26,13 +22,14 @@ USES
   File9,
   File11,
   MultNode,
-  Sysop4;
+  Sysop4,
+  SysUtils;
 
 PROCEDURE MiniDOS;
 VAR
   XWord: ARRAY [1..9] OF AStr;
   (*
-  DirInfo: SearchRec;
+  DirInfo: TRawByteSearchRec;
   *)
   CurDir,
   s,
@@ -106,11 +103,11 @@ VAR
     TSiz: LongInt;
     i,
     j: Byte;
-    RetLevel: SmallInt;
+    RetLevel: Byte;
     b,
     Ok: Boolean;
   BEGIN
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     NoCmd := FALSE;
     s := XWord[1];
@@ -236,19 +233,19 @@ VAR
           Print('The system cannot find the file specified.')
         ELSE
         BEGIN
-          Abort := FALSE;
+          AbortRG := FALSE;
           Found := FALSE;
           FindFirst(BSlash(XWord[2],TRUE)+'*.*',AnyFile,DirInfo);
-          WHILE (DosError = 0) AND (NOT Abort) AND (NOT HangUp) DO
+          WHILE (DosError = 0) AND (NOT AbortRG) AND (NOT HangUp) DO
           BEGIN
             IF (DirInfo.Name <> '.') AND (DirInfo.Name <> '..') THEN
             BEGIN
-              Abort := TRUE;
+              AbortRG := TRUE;
               Found := TRUE;
             END;
             FindNext(DirInfo);
           END;
-          Abort := FALSE;
+          AbortRG := FALSE;
           IF (Found) THEN
             Print('The directory is not empty.')
           ELSE
@@ -288,10 +285,10 @@ VAR
           END;
 
           j := 0;
-          Abort := FALSE;
+          AbortRG := FALSE;
           Next := FALSE;
           FindFirst(XWord[2],AnyFile - Directory - VolumeID,DirInfo);
-          WHILE (DOSError = 0) AND (NOT Abort) AND (NOT HangUp) DO
+          WHILE (DOSError = 0) AND (NOT AbortRG) AND (NOT HangUp) DO
           BEGIN
             s1 := op + DirInfo.Name;
             IF (b) THEN
@@ -340,10 +337,10 @@ VAR
             np := BSlash(np,TRUE);
           END;
           j := 0;
-          Abort := FALSE;
+          AbortRG := FALSE;
           Next := FALSE;
           FindFirst(XWord[2],AnyFile - Directory - VolumeID,DirInfo);
-          WHILE (DOSError = 0) AND (NOT Abort) AND (NOT HangUp) DO
+          WHILE (DOSError = 0) AND (NOT AbortRG) AND (NOT HangUp) DO
           BEGIN
             s1 := op + DirInfo.Name;
             IF (b) THEN
@@ -616,7 +613,7 @@ VAR
   PROCEDURE UploadFiles(FArea: Integer; FileName1: Str12; VAR FArrayRecNum1: Byte);
   VAR
     (*
-    DirInfo: SearchRec;
+    DirInfo: TRawByteSearchRec;
     *)
     Cmd: Char;
     NumExtDesc: Byte;
@@ -645,7 +642,7 @@ VAR
       Prompt('^1Scanning ^5'+MemFileArea.AreaName+' #'+IntToStr(CompFileArea(FArea,0))+'^1 ...');
 
       FindFirst(MemFileArea.DLPath+FileName1,AnyFile - VolumeID - Directory - DOS.Hidden,DirInfo);
-      WHILE (DOSError = 0) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (DOSError = 0) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
         DirInfo.Name := Align(DirInfo.Name);
         RecNo(FileInfo,DirInfo.Name,DirFileRecNum);
@@ -690,7 +687,7 @@ VAR
               OneK(Cmd,'QYNA',TRUE,TRUE);
               Ok := (Cmd = 'Y') OR (Cmd = 'A');
               FlagAll := (Cmd = 'A');
-              Abort := (Cmd = 'Q');
+              AbortRG := (Cmd = 'Q');
             END;
             GotDesc := TRUE;
           END
@@ -704,7 +701,7 @@ VAR
             BEGIN
               IF (Length(FileInfo.Description) = 1) THEN
               BEGIN
-                Abort := TRUE;
+                AbortRG := TRUE;
                 Exit;
               END;
               Cmd := UpCase(FileInfo.Description[2]);
@@ -781,7 +778,7 @@ BEGIN
   PauseScr(FALSE);
   InitFArray(FArray);
   FArrayRecNum := 0;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   IF (NOT SearchAllFileAreas) THEN
     UploadFiles(FileArea,FileName,FArrayRecNum)
@@ -789,7 +786,7 @@ BEGIN
   BEGIN
     SaveFileArea := FileArea;
     FArea := 1;
-    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       UploadFiles(FArea,FileName,FArrayRecNum);
       WKey;
@@ -801,4 +798,4 @@ BEGIN
 END;
 
 END.
-
+

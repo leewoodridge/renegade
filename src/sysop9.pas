@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-{$MODE TP}
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 UNIT SysOp9;
 
@@ -15,7 +11,8 @@ USES
   Common,
   File0,
   File2,
-  SysOp2K;
+  SysOp2K,
+  SysUtils;
 
 PROCEDURE FileAreaEditor;
 TYPE
@@ -162,7 +159,7 @@ VAR
                 END;
           END;
         Temp := Temp + Add;
-        Inc(Index,2);
+{        Inc(Index,2);}
       END
       ELSE
         Temp := Temp + S[Index];
@@ -189,26 +186,26 @@ VAR
     Reset(RGStrFile,1);
     Seek(RGStrFile,(StrPointer.Pointer - 1));
     REPEAT
-      BlockRead(RGStrFile,S[0],1);
-      BlockRead(RGStrFile,S[1],Ord(S[0]));
+      BlockRead(RGStrFile,S[1],1);
+      BlockRead(RGStrFile,S[1],Ord(S[1]));
       Inc(TotLoad,(Length(S) + 1));
       S := FAEMCI(S,MemFileArea,MCIVars1);
       IF (PassValue) THEN
       BEGIN
         IF (S[Length(s)] = '@') THEN
-          Dec(S[0]);
+          Dec(S[1]);
       END
       ELSE
       BEGIN
         IF (S[Length(S)] = '@') THEN
         BEGIN
-          Dec(S[0]);
+          Dec(S[1]);
           Prompt(S);
         END
         ELSE
           PrintACR(S);
       END;
-    UNTIL (TotLoad >= StrPointer.TextSize) OR (Abort) OR (HangUp);
+    UNTIL (TotLoad >= StrPointer.TextSize) OR (AbortRG) OR (HangUp);
     Close(RGStrFile);
     LastError := IOResult;
     FAELNGStr := S;
@@ -646,7 +643,7 @@ VAR
       REPEAT
         IF (Cmd1 <> '?') THEN
         BEGIN
-          Abort := FALSE;
+          AbortRG := FALSE;
           Next := FALSE;
           CLS;
           IF (Editing) THEN
@@ -896,9 +893,9 @@ VAR
           CheckFileArea(TempMemFileArea1,MCIVars1,1,6,Ok);
           IF (NOT OK) THEN
             IF (NOT PYNQ(FAELngStr(24,MemFileArea,MCIVars1,TRUE),0,TRUE)) THEN
-              Abort := TRUE;
-        UNTIL (OK) OR (Abort) OR (HangUp);
-        IF (NOT Abort) AND (PYNQ(FAELngStr(25,MemFileArea,MCIVars1,TRUE),0,FALSE)) THEN
+              AbortRG := TRUE;
+        UNTIL (OK) OR (AbortRG) OR (HangUp);
+        IF (NOT AbortRG) AND (PYNQ(FAELngStr(25,MemFileArea,MCIVars1,TRUE),0,FALSE)) THEN
         BEGIN
           FAELngStr(26,MemFileArea,MCIVars1,FALSE);
           Seek(FileAreaFile,FileSize(FileAreaFile));
@@ -1177,7 +1174,7 @@ VAR
   BEGIN
     IF (RecNumToList1 < 1) OR (RecNumToList1 > NumFileAreas) THEN
       RecNumToList1 := 1;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     CLS;
     CASE DisplayType OF
@@ -1187,7 +1184,7 @@ VAR
     Reset(FileAreaFile);
     NumDone := 0;
     WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumFileAreas)
-          AND (NOT Abort) AND (NOT HangUp) DO
+          AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(FileAreaFile,(RecNumToList1 - 1));
       Read(FileAreaFile,MemFileArea);
@@ -1211,7 +1208,7 @@ VAR
     END;
     Close(FileAreaFile);
     LastError := IOResult;
-    IF (NumFileAreas = 0) AND (NOT Abort) AND (NOT HangUp) THEN
+    IF (NumFileAreas = 0) AND (NOT AbortRG) AND (NOT HangUp) THEN
       FAELngStr(2,MemFileArea,MCIVars1,FALSE);
   END;
 
@@ -1263,4 +1260,4 @@ BEGIN
   LastError := IOResult;
 END;
 
-END.
+END.

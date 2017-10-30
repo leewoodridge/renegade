@@ -1,8 +1,39 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
+{*******************************************************}
+{                                                       }
+{   Renegade BBS                                        }
+{                                                       }
+{   Copyright (c) 1990-2013 The Renegade Dev Team       }
+{   Copyleft  (â†„) 2016 Renegade BBS                     }
+{                                                       }
+{   This file is part of Renegade BBS                   }
+{                                                       }
+{   Renegade is free software: you can redistribute it  }
+{   and/or modify it under the terms of the GNU General }
+{   Public License as published by the Free Software    }
+{   Foundation, either version 3 of the License, or     }
+{   (at your option) any later version.                 }
+{                                                       }
+{   Renegade is distributed in the hope that it will be }
+{   useful, but WITHOUT ANY WARRANTY; without even the  }
+{   implied warranty of MERCHANTABILITY or FITNESS FOR  }
+{   A PARTICULAR PURPOSE.  See the GNU General Public   }
+{   License for more details.                           }
+{                                                       }
+{   You should have received a copy of the GNU General  }
+{   Public License along with Renegade.  If not, see    }
+{   <http://www.gnu.org/licenses/>.                     }
+{                                                       }
+{*******************************************************}
+{   _______                                  __         }
+{  |   _   .-----.-----.-----.-----.---.-.--|  .-----.  }
+{  |.  l   |  -__|     |  -__|  _  |  _  |  _  |  -__|  }
+{  |.  _   |_____|__|__|_____|___  |___._|_____|_____|  }
+{  |:  |   |                 |_____|                    }
+{  |::.|:. |                                            }
+{  `--- ---'                                            }
+{*******************************************************}
 
-{$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
+{$i Renegade.Common.Defines.inc}
 
 UNIT File1;
 
@@ -167,7 +198,7 @@ VAR
   Cmd: Char;
   Changed: Boolean;
 BEGIN
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   IF (IsFileAttach IN TransferFlags) THEN
   BEGIN
@@ -243,8 +274,8 @@ BEGIN
     Onek(Cmd,'Q'^M,TRUE,TRUE);
     IF (Cmd = 'Q') THEN
     BEGIN
-      Include(TransferFlags,IsKeyboardAbort);
-      Abort := TRUE;
+      Include(TransferFlags,IsKeyboardAbortRG);
+      AbortRG := TRUE;
     END;
   END;
   IF (IsPaused IN TransferFLags) THEN
@@ -266,7 +297,7 @@ VAR
     RecNo(FileInfo,FileName1,DirFileRecNum);
     IF (BadDownloadPath) THEN
       Exit;
-    WHILE (DirFileRecNum <> -1) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (DirFileRecNum <> -1) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(FileInfoFile,DirFileRecNum);
       Read(FileInfoFile,FileInfo);
@@ -276,10 +307,10 @@ VAR
         BEGIN
           DLX(FileInfo,DirFileRecNum,TransferFlags);
           ScanBase := TRUE;
-          IF (IsKeyboardAbort IN TransferFlags) THEN
-            Abort := TRUE;
+          IF (IsKeyboardAbortRG IN TransferFlags) THEN
+            AbortRG := TRUE;
           IF (NOT (IsWildCard(FileName1))) THEN
-            Abort := TRUE;
+            AbortRG := TRUE;
         END
         ELSE
         BEGIN
@@ -297,7 +328,7 @@ VAR
 
 BEGIN
   GotAny := FALSE;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
 
   Include(TransferFlags,IsCheckRatio);
@@ -309,7 +340,7 @@ BEGIN
   BEGIN
     SaveFileArea := FileArea;
     FArea := 1;
-    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       IF (FArea <> SaveFileArea) THEN
       BEGIN
@@ -402,7 +433,7 @@ BEGIN
         IF (FileName = '') THEN
         BEGIN
           NL;
-          Print('Aborted.');
+          Print('AbortRGed.');
         END;
       END;
       IF (FileName <> '') THEN
@@ -854,7 +885,7 @@ VAR
   ConversionTime: LongInt;
   ULS,
   UploadOk,
-  KeyboardAbort,
+  KeyboardAbortRG,
   Convt,
   AExists,
   ResumeFile,
@@ -886,7 +917,7 @@ BEGIN
     Exit;
   END;
 
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
 
   ResumeFile := FALSE;
@@ -990,8 +1021,8 @@ BEGIN
           UploadOk := (Cmd = 'Y')
         ELSE
           UploadOk := (Cmd IN ['Y',^M]);
-        Abort := (Cmd = 'Q');
-        IF (Abort) THEN
+        AbortRG := (Cmd = 'Q');
+        IF (AbortRG) THEN
           Print('^3Quit')
         ELSE IF (NOT UploadOk) THEN
           Print('^3No')
@@ -1007,7 +1038,7 @@ BEGIN
       DirFileRecNum := 0;
     END;
 
-    IF (General.SearchDup) AND (UploadOk) AND (NOT Abort) AND (InCom) THEN
+    IF (General.SearchDup) AND (UploadOk) AND (NOT AbortRG) AND (InCom) THEN
       IF (NOT FileSysOp) OR (PYNQ('Search for duplicates? ',0,FALSE)) THEN
           IF (SearchForDups(FileName)) THEN
             Exit;
@@ -1058,7 +1089,7 @@ BEGIN
 
   IF (ULS) THEN
   BEGIN
-    Receive(FileName,MemFileArea.ULPath,ResumeFile,UploadOk,KeyboardAbort,AddULBatch,TransferTime);
+    Receive(FileName,MemFileArea.ULPath,ResumeFile,UploadOk,KeyboardAbortRG,AddULBatch,TransferTime);
 
     IF (AddULBatch) THEN
     BEGIN
@@ -1133,7 +1164,7 @@ BEGIN
       Exit;
     END;
 
-    IF (KeyboardAbort) THEN
+    IF (KeyboardAbortRG) THEN
     BEGIN
       FileArea := SaveFileArea;
       Exit;
@@ -1348,6 +1379,7 @@ PROCEDURE UploadFile;
 VAR
   FileName: Str12;
   AddULBatch: Boolean;
+  DirInfo: SearchRec;
 BEGIN
   InitFileArea(FileArea);
   IF (BadUploadPath) THEN
@@ -1383,7 +1415,7 @@ BEGIN
     IF (FileName = '') THEN
     BEGIN
       NL;
-      Print('Aborted.');
+      Print('AbortRGed.');
     END
     ELSE
     BEGIN
@@ -1405,7 +1437,7 @@ BEGIN
             REPEAT
               UL(DirInfo.Name,TRUE,AddULBatch);
               FindNext(DirInfo);
-            UNTIL (DOSError <> 0) OR (Abort) OR (HangUp);
+            UNTIL (DOSError <> 0) OR (AbortRG) OR (HangUp);
         END;
       END;
     END;
@@ -1421,7 +1453,7 @@ VAR
   SaveFileArea: Integer;
 BEGIN
   SaveFileArea := FileArea;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   NumOnline := 0;
   TempStr := '';
@@ -1431,20 +1463,20 @@ BEGIN
 
   {
   $New_Scan_Char_File
-  þ
+  ï¿½
   $
   }
   IF (ShowScan) THEN
     ScanChar := lRGLngStr(55,TRUE);
   {
-  %CL-ÚÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-  -³. Num -³/ Name                           -³. Num -³/ Name                           -³
-  -ÀÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+  %CL-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿
+  -ï¿½. Num -ï¿½/ Name                           -ï¿½. Num -ï¿½/ Name                           -ï¿½
+  -ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
   }
   lRGLngStr(59,FALSE);
   Reset(FileAreaFile);
   NumDone := 0;
-  WHILE (NumDone < (PageLength - AdjPageLen)) AND (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (NumDone < (PageLength - AdjPageLen)) AND (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     LoadFileArea(FArea);
     IF (ShowScan) THEN
@@ -1487,9 +1519,9 @@ BEGIN
   END;
   Close(FileAreaFile);
   LastError := IOResult;
-  IF (NumOnline = 1) AND (NOT Abort) AND (NOT HangUp) THEN
+  IF (NumOnline = 1) AND (NOT AbortRG) AND (NOT HangUp) THEN
     PrintACR(TempStr)
-  ELSE IF (NumFAreas = 0) AND (NOT Abort) AND (NOT HangUp) THEN
+  ELSE IF (NumFAreas = 0) AND (NOT AbortRG) AND (NOT HangUp) THEN
     LRGLngStr(67,FALSE);
   {
   %LF^7No file areas!^1
@@ -1500,6 +1532,7 @@ END;
 
 PROCEDURE UnlistedDownload(FileName: AStr);
 VAR
+  DirInfo: SearchRec;
   User: UserRecordType;
   TransferFlags: TransferFlagSet;
   DS: DirStr;
@@ -1517,12 +1550,12 @@ BEGIN
     BEGIN
       SaveFileArea := FileArea;
       FileArea := -1;
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
       LoadURec(User,1);
       FSplit(FileName,DS,NS,ES);
       FindFirst(SQOutSp(FileName),AnyFile - Directory - VolumeID - Hidden - SysFile,DirInfo);
-      WHILE (DOSError = 0) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (DOSError = 0) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
         WITH MemFileArea DO
         BEGIN
@@ -1553,8 +1586,8 @@ BEGIN
             Include(MemFileArea.FAFlags,FACDROm);
         END;
         DLX(FileInfo,-1,TransferFlags);
-        IF (IsKeyboardAbort IN Transferflags) THEN
-          Abort := TRUE;
+        IF (IsKeyboardAbortRG IN Transferflags) THEN
+          AbortRG := TRUE;
         FindNext(DirInfo);
       END;
       FileArea := SaveFileArea;
@@ -1574,7 +1607,7 @@ BEGIN
   IF (PathFileName = '') THEN
   BEGIN
     NL;
-    Print('Aborted.');
+    Print('AbortRGed.');
   END
   ELSE IF (NOT IsUL(PathFileName)) THEN
   BEGIN
@@ -1585,4 +1618,4 @@ BEGIN
     UnlistedDownload(PathFileName)
 END;
 
-END.
+END.

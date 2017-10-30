@@ -1,8 +1,40 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
+{*******************************************************}
+{                                                       }
+{   Renegade BBS                                        }
+{                                                       }
+{   Copyright (c) 1990-2013 The Renegade Dev Team       }
+{   Copyleft  (ↄ) 2016 Renegade BBS                     }
+{                                                       }
+{   This file is part of Renegade BBS                   }
+{                                                       }
+{   Renegade is free software: you can redistribute it  }
+{   and/or modify it under the terms of the GNU General }
+{   Public License as published by the Free Software    }
+{   Foundation, either version 3 of the License, or     }
+{   (at your option) any later version.                 }
+{                                                       }
+{   Renegade is distributed in the hope that it will be }
+{   useful, but WITHOUT ANY WARRANTY; without even the  }
+{   implied warranty of MERCHANTABILITY or FITNESS FOR  }
+{   A PARTICULAR PURPOSE.  See the GNU General Public   }
+{   License for more details.                           }
+{                                                       }
+{   You should have received a copy of the GNU General  }
+{   Public License along with Renegade.  If not, see    }
+{   <http://www.gnu.org/licenses/>.                     }
+{                                                       }
+{*******************************************************}
+{   _______                                  __         }
+{  |   _   .-----.-----.-----.-----.---.-.--|  .-----.  }
+{  |.  l   |  -__|     |  -__|  _  |  _  |  _  |  -__|  }
+{  |.  _   |_____|__|__|_____|___  |___._|_____|_____|  }
+{  |:  |   |                 |_____|                    }
+{  |::.|:. |                                            }
+{  `--- ---'                                            }
+{*******************************************************}
 
-{$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
+{$i Renegade.Common.Defines.inc}
+
 UNIT SysOp12;
 
 INTERFACE
@@ -43,12 +75,12 @@ VAR
   TempStr: AStr;
   RecNumToList: Integer;
 BEGIN
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   TempStr := '';
   Reset(ConferenceFile);
   RecNumToList := 1;
-  WHILE (RecNumToList <= NumConfKeys) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (RecNumToList <= NumConfKeys) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     Seek(ConferenceFile,(RecNumToList - 1));
     Read(ConferenceFile,Conference);
@@ -73,7 +105,7 @@ VAR
   NumOnline: Byte;
 BEGIN
   AllowContinue := TRUE;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   CLS;
   IF (DisplayListNum) THEN
@@ -90,7 +122,7 @@ BEGIN
   TempStr := '';
   NumOnline := 0;
   RecNumToList := 1;
-  WHILE (RecNumToList <= NumConfKeys) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (RecNumToList <= NumConfKeys) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     Seek(ConferenceFile,(RecNumToList - 1));
     Read(ConferenceFile,Conference);
@@ -113,9 +145,9 @@ BEGIN
   Close(ConferenceFile);
   LastError := IOResult;
   AllowContinue := FALSE;
-  IF (NumOnline = 1) AND (NOT Abort) AND (NOT HangUp) THEN
+  IF (NumOnline = 1) AND (NOT AbortRG) AND (NOT HangUp) THEN
     PrintaCR(TempStr);
-  IF (NumConfKeys = 0) AND (NOT Abort) AND (NOT HangUp) THEN
+  IF (NumConfKeys = 0) AND (NOT AbortRG) AND (NOT HangUp) THEN
     Print('^7No conference records.');
 END;
 
@@ -132,7 +164,7 @@ BEGIN
     Cmd := #0;
   IF (Cmd <> #0) AND (Cmd <> '?') AND (NOT (Cmd IN ConfKeys)) THEN
   BEGIN
-    Print('%NLCommand error, operation aborted!');
+    Print('%NLCommand error, operation AbortRGed!');
     SysOpLog('^7Change conference cmd error, invalid options: "'+Cmd+'".');
     Exit;
   END;
@@ -282,7 +314,7 @@ VAR
       REPEAT
         IF (Cmd1 <> '?') THEN
         BEGIN
-          Abort := FALSE;
+          AbortRG := FALSE;
           Next := FALSE;
           CLS;
           IF (Editing) THEN
@@ -400,9 +432,9 @@ VAR
             CheckConference(TempConference1,1,1,Ok);
             IF (NOT OK) THEN
               IF (NOT PYNQ('%LFContinue inserting conference record? ',0,TRUE)) THEN
-                Abort := TRUE;
-          UNTIL (OK) OR (Abort) OR (HangUp);
-          IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+                AbortRG := TRUE;
+          UNTIL (OK) OR (AbortRG) OR (HangUp);
+          IF (NOT AbortRG) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
           BEGIN
             Print('%LF[> Inserting conference record ...');
             Include(ConfKeys,Cmd1);

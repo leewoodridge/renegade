@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 {$MODE TP}
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
@@ -151,15 +148,15 @@ BEGIN
   TempHiMsg := HiMsg;
   IF ((Msg_On < 1) OR (Msg_On > TempHiMsg)) THEN
     Exit;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   CLS;
-  PrintACR('ÚÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄ¿');
-  PrintACR('³ Msg# ³ Sender            ³ Receiver           ³  '+'Subject           ³! Posted ³');
-  PrintACR('ÀÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÙ');
+(*  PrintACR('ÚÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄ¿');
+  PrintACR('? Msg# ? Sender            ? Receiver           ?  +Subject           ?! Poste''?);
+  PrintACR('ÀÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÙ');*)
   Dec(Msg_On);
   NumDone := 0;
-  WHILE ((NumDone < (PageLength - 7)) AND (Msg_On >= 0) AND (Msg_On < TempHiMsg) AND (NOT Abort) AND (NOT HangUp)) DO
+  WHILE ((NumDone < (PageLength - 7)) AND (Msg_On >= 0) AND (Msg_On < TempHiMsg) AND (NOT AbortRG) AND (NOT HangUp)) DO
   BEGIN
     Inc(Msg_On);
 
@@ -221,7 +218,7 @@ VAR
   MHeader: MHeaderRec;
   Cmd,
   NewMenuCmd: AStr;
-  Junk: Str36;
+  Junk: AnsiString{Str36};
   Cmd1: Char;
   SaveMenu,
   CmdToExec,
@@ -250,7 +247,7 @@ BEGIN
   AllowContinue := TRUE;
   ThreadStart := 0;
   TReadPrompt := 0;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   SaveMenu := CurMenu;
 
@@ -266,7 +263,7 @@ BEGIN
 
   REPEAT
 
-    IF (Contlist) AND (Abort) THEN
+    IF (Contlist) AND (AbortRG) THEN
     BEGIN
       Contlist := FALSE;
       NL;
@@ -345,7 +342,7 @@ BEGIN
                           NewMenuCmd,
                           MemCmd^[CmdToExec].NodeActivityDesc);
         UNTIL (CmdToExec = 0) OR (Done) OR (HangUp);
-        Abort := FALSE;
+        AbortRG := FALSE;
         Next := FALSE;
         CASE TReadPrompt OF
           1 : ;             { Read Again }
@@ -729,7 +726,7 @@ BEGIN
 
          10 : BEGIN
                 Contlist := TRUE;
-                Abort := FALSE;
+                AbortRG := FALSE;
                 NL;
                 Print('Continuous message listing on.');
               END;
@@ -853,7 +850,7 @@ BEGIN
               END;
          14 : BEGIN
                 DoneScan := TRUE;
-                Abort := TRUE;
+                AbortRG := TRUE;
               END;
          15 : ListMessages(Pub);
          16 : IF (NOT CoSysOp) THEN
@@ -909,7 +906,7 @@ BEGIN
               END;
          21 : ForwardMessage(Msg_On);
         END;
-      UNTIL (TReadPrompt IN [1..2,7..10,13..15,18]) OR (Abort) OR (Next) OR (HangUp)
+      UNTIL (TReadPrompt IN [1..2,7..10,13..15,18]) OR (AbortRG) OR (Next) OR (HangUp)
     ELSE
       Inc(Msg_On);
 
@@ -952,7 +949,7 @@ VAR
   SaveReadMsgArea: Integer;
 BEGIN
   SaveReadMsgArea := ReadMsgArea;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   IF (MenuOption = '') THEN
     MsgArea := -1;
@@ -1100,7 +1097,7 @@ VAR
       ELSE
         MsgNum := 1;
       IF (MsgNum > 0) AND (FileSize(MsgHdrF) > 0) THEN
-        WHILE (MsgNum <= FileSize(MsgHdrF)) AND (NOT Next) AND (NOT Abort) AND (NOT HangUp) DO
+        WHILE (MsgNum <= FileSize(MsgHdrF)) AND (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) DO
         BEGIN
           LoadHeader(MsgNum,MsgHeader);
           Match := FALSE;
@@ -1164,7 +1161,7 @@ VAR
           END;
           Wkey;
           IF (Next) THEN
-            Abort := TRUE;
+            AbortRG := TRUE;
           Inc(MsgNum);
         END;
       Close(MsgHdrF);
@@ -1216,7 +1213,7 @@ BEGIN
     IF (ScanGlobal) OR ((MenuOption = '') AND PYNQ('Global scan? ',0,FALSE)) THEN
     BEGIN
       MArea := 1;
-      WHILE (MArea >= 1) AND (MArea <= NumMsgAreas) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (MArea >= 1) AND (MArea <= NumMsgAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
         Searchboard(MArea,Cmd);
         Wkey;
@@ -1259,7 +1256,7 @@ BEGIN
   FirstTime := TRUE;
   AnyFound := FALSE;
   MArea := 1;
-  WHILE (MArea >= 1) AND (MArea <= NumMsgAreas) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (MArea >= 1) AND (MArea <= NumMsgAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     IF (MsgArea <> MArea) THEN
       ChangeMsgArea(MArea);
@@ -1310,7 +1307,7 @@ BEGIN
     Print('^5No messages found.^1')
   ELSE
   BEGIN
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     NL;
     IF PYNQ('Read your new public messages now? ',0,FALSE) THEN
@@ -1318,7 +1315,7 @@ BEGIN
       Assign(ScanAllPublicMsgFile,TempDir+'SAPM'+IntToStr(ThisNode)+'.DAT');
       Reset(ScanAllPublicMsgFile);
       MArea := 1;
-      WHILE (MArea >= 1) AND (MArea <= NumMsgAreas) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (MArea >= 1) AND (MArea <= NumMsgAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
         Seek(ScanAllPublicMsgFile,(MArea - 1));
         Read(ScanAllPublicMsgFile,MsgsFound);
@@ -1373,7 +1370,7 @@ BEGIN
   SaveMsgArea := MsgArea;
   MArea := MsgArea;
   Global := FALSE;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   IF (UpCase(MenuOption[1]) = 'C') THEN
     MArea := MsgArea
@@ -1388,7 +1385,7 @@ BEGIN
   ELSE
   BEGIN
     MArea := 1;
-    WHILE (MArea >= 1) AND (MArea <= NumMsgAreas) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (MArea >= 1) AND (MArea <= NumMsgAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       NewScan(MArea);
       WKey;
@@ -1400,4 +1397,4 @@ BEGIN
   LoadMsgArea(MsgArea);
 END;
 
-END.
+END.

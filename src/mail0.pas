@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 {$MODE TP}
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
@@ -25,7 +22,7 @@ PROCEDURE LoadLastReadRecord(VAR LastReadRec: ScanRec);
 PROCEDURE SaveLastReadRecord(LastReadRec: ScanRec);
 PROCEDURE InitMsgArea(MArea: Integer);
 PROCEDURE ReadMsg(Anum,MNum,TNum: Word);
-FUNCTION HeaderLine(MHeader: MHeaderRec; MNum,TNum: Word; Line: byte; VAR FileOwner: Str36): STRING;
+FUNCTION HeaderLine(MHeader: MHeaderRec; MNum,TNum: Word; Line: byte; Var FileOwner: AnsiString): STRING;
 FUNCTION ToYou(MessageHeader: MHeaderRec): Boolean;
 FUNCTION FromYou(MessageHeader: MHeaderRec): Boolean;
 FUNCTION GetTagLine: Str74;
@@ -489,13 +486,15 @@ END;
 PROCEDURE ExtractMsgToFile(MsgNum: Word; MHeader: MHeaderRec);
 VAR
   ExtTxtFile: Text;
-  FileOwner: Str36;
-  FileName: Str52;
-  MsgTxtStr: STRING;
+  FileOwner: AnsiString; // Str36
+  FileName: ShortString; // Str52
+  MsgTxtStr: String;
   Counter: Byte;
   TempTextSize: Word;
   StripColors: Boolean;
 BEGIN
+  SetLength(FileOwner, 36);
+  SetLength(FileName, 52);
   NL;
   Print('Extract message to file:');
   Prt(': ');
@@ -503,7 +502,7 @@ BEGIN
   IF (FileName = '') THEN
   BEGIN
     NL;
-    Print('Aborted!');
+    Print('AbortRGed!');
     Exit;
   END;
   NL;
@@ -579,7 +578,7 @@ BEGIN
   END;
 END;
 
-FUNCTION HeaderLine(MHeader: MHeaderRec; MNum,TNum: Word; Line: byte; VAR FileOwner: Str36): STRING;
+Function HeaderLine(MHeader: MHeaderRec; MNum,TNum: Word; Line: byte; Var FileOwner: AnsiString): String;
 VAR
   S,
   S1: STRING;
@@ -724,20 +723,21 @@ VAR
   FileInfo: FileInfoRecordType;
   TransferFlags: TransferFlagSet;
   MsgTxtStr: AStr;
-  FileOwner: Str36;
+  FileOwner: AnsiString;
   DS: DirStr;
   NS: NameStr;
   ES: ExtStr;
   SaveFileArea: Integer;
   TempTextSize: Word;
 BEGIN
-  AllowAbort := (CoSysOp) OR (NOT (MAForceRead IN MemMsgArea.MAFlags));
+  SetLength(FileOwner, 36);
+  AllowAbortRG := (CoSysOp) OR (NOT (MAForceRead IN MemMsgArea.MAFlags));
   AllowContinue := TRUE;
   LoadHeader(Anum,MHeader);
   IF ((MDeleted IN Mheader.Status) OR (UnValidated IN MHeader.Status)) AND
      NOT (CoSysOp OR FromYou(MHeader) OR ToYou(MHeader)) THEN
     Exit;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
 
   FOR TempTextSize := 1 TO 6 DO
@@ -756,15 +756,15 @@ BEGIN
   IF (IOResult <> 0) THEN
   BEGIN
     SysOpLog('Error accessing message text.');
-    AllowAbort := TRUE;
+    AllowAbortRG := TRUE;
     Exit;
   END;
-  IF (NOT Abort) THEN
+  IF (NOT AbortRG) THEN
   BEGIN
     Reading_A_Msg := TRUE;
     MCIAllowed := (AllowMCI IN Mheader.Status);
     TempTextSize := 0;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     UserColor(MemMsgArea.Text_Color);
     IF (MHeader.TextSize > 0) THEN
@@ -790,7 +790,7 @@ BEGIN
           ELSE IF (Pos(#254,Copy(MsgTxtStr,1,5)) > 0) THEN
             MsgTxtStr := '^'+IntToStr(MemMsgArea.Tear_Color) + MsgTxtStr;
           PrintACR('^1'+MsgTxtStr);
-        UNTIL (TempTextSize >= MHeader.TextSize) OR (Abort) OR (HangUp);
+        UNTIL (TempTextSize >= MHeader.TextSize) OR (AbortRG) OR (HangUp);
       END;
     MCIAllowed := TRUE;
     Reading_A_Msg := FALSE;
@@ -833,13 +833,13 @@ BEGIN
       END;
       TransferFlags := [IsFileAttach];
       DLX(FileInfo,-1,TransferFlags);
-      IF (IsTransferOk IN TransferFLags) AND (NOT (IsKeyboardAbort IN TransferFlags)) THEN
+      IF (IsTransferOk IN TransferFLags) AND (NOT (IsKeyboardAbortRG IN TransferFlags)) THEN
         SendShortMessage(MHeader.From.UserNum,Caps(ThisUser.Name)+' downloaded "^5'+StripName(MHeader.Subject)+
                          '^1" from ^5File Attach');
       FileArea := SaveFileArea;
       LoadFileArea(FileArea);
     END;
-  AllowAbort := TRUE;
+  AllowAbortRG := TRUE;
   TempPause := (Pause IN ThisUser.Flags);
 END;
 
@@ -892,4 +892,4 @@ BEGIN
   GetTagLine := TagLine;
 END;
 
-END.
+END.

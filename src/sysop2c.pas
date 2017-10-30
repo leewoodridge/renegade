@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
 
@@ -24,7 +21,7 @@ BEGIN
   REPEAT
     WITH General DO
     BEGIN
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
       MCIAllowed := FALSE;
       CLS;

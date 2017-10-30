@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B+,D+,E+,F+,I+,L+,N-,O+,R-,S+,V-}
 UNIT SysOp7;
@@ -28,7 +25,7 @@ PROCEDURE DisplayMenus(VAR RecNumToList1: Integer; DisplayListNum: Boolean);
 VAR
   NumDone: Byte;
 BEGIN
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   AllowContinue := TRUE;
   MCIAllowed := FALSE;
@@ -46,7 +43,7 @@ BEGIN
   Reset(MenuFile);
   NumDone := 0;
   WHILE (NumDone < (PageLength - 7)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumMenus)
-        AND (NOT Abort) AND (NOT HangUp) DO
+        AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     Seek(MenuFile,MenuRecNumArray[RecNumToList1]);
     Read(MenuFile,MenuR);
@@ -394,7 +391,7 @@ VAR
             REPEAT
               IF (Cmd1 <> '?') THEN
               BEGIN
-                Abort := FALSE;
+                AbortRG := FALSE;
                 Next := FALSE;
                 MCIAllowed := FALSE;
                 CLS;

@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
 UNIT SysOp5;
@@ -155,7 +151,7 @@ VAR
       REPEAT
         IF (Cmd1 <> '?') THEN
         BEGIN
-          Abort := FALSE;
+          AbortRG := FALSE;
           Next := FALSE;
           CLS;
           IF (Editing) THEN
@@ -384,9 +380,9 @@ VAR
             CheckHistoryRecord(TempHistory1,1,1,Ok);
             IF (NOT OK) THEN
               IF (NOT PYNQ('%LFContinue inserting history date? ',0,TRUE)) THEN
-                Abort := TRUE;
-          UNTIL (OK) OR (Abort) OR (HangUp);
-          IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+                AbortRG := TRUE;
+          UNTIL (OK) OR (AbortRG) OR (HangUp);
+          IF (NOT AbortRG) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
           BEGIN
             Print('%LF[> Inserting history record ...');
             Seek(HistoryFile,FileSize(HistoryFile));
@@ -472,7 +468,7 @@ VAR
   BEGIN
     IF (RecNumToList1 < 1) OR (RecNumToList1 > NumHistoryDates) THEN
       RecNumToList1 := NumHistoryDates;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     CLS;
     PrintACR('^3        ^4:^3Mins ^4:^3    ^4:^3      ^4:^3#New^4:^3Tim/^4:^3Pub ^4:^3Priv^4:^3Feed^4:^3    ^4:^3'+
@@ -483,7 +479,7 @@ VAR
     Reset(HistoryFile);
     NumDone := 0;
     WHILE (NumDone < (PageLength - 6)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumHistoryDates)
-          AND (NOT Abort) AND (NOT HangUp) DO
+          AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(HistoryFile,(RecNumToList1 - 1));
       Read(HistoryFile,History);

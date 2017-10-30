@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B+,D+,E+,F+,I+,L+,N-,O+,R-,S+,V-}
 UNIT SysOp7M;
@@ -204,13 +201,14 @@ VAR
 
   PROCEDURE ModifyCommand;
   VAR
-    TempS1: AStr;
+    TempS1: ShortString; // Str2
     Cmd1: Char;
     TempB: Byte;
     RecNumToModify,
     SaveRecNumToModify: SmallInt;
     Changed: Boolean;
   BEGIN
+    SetLength(TempS1, 2);
     IF (CmdNumArray[MenuToModify] = 0) THEN
       Messages(4,0,'commands')
     ELSE
@@ -234,7 +232,7 @@ VAR
             REPEAT
               IF (Cmd1 <> '?') THEN
               BEGIN
-                Abort := FALSE;
+                AbortRG := FALSE;
                 Next := FALSE;
                 MCIAllowed := FALSE;
                 CLS;
@@ -413,7 +411,7 @@ BEGIN
   REPEAT
     IF (Cmd <> '?') THEN
     BEGIN
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
       MCIAllowed := FALSE;
       CLS;
@@ -421,7 +419,7 @@ BEGIN
       PrintACR('^4===:===================== ===:===================== ===:=====================');
       Reset(MenuFile);
       RecNumToList := 1;
-      WHILE (RecNumToList <= GetRecNum(CmdNumArray[MenuToModify])) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (RecNumToList <= GetRecNum(CmdNumArray[MenuToModify])) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
         Seek(MenuFile,(RecNumToList + MenuRecNumArray[MenuToModify]));
         Read(MenuFile,MenuR);

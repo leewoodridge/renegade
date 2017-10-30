@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 unit RPScreen;
 
 interface
@@ -170,4 +167,4 @@ end;
 BEGIN
   StdOut := GetStdHandle(STD_OUTPUT_HANDLE);
 {$ENDIF}
-END.
+END.

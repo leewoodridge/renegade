@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
@@ -122,7 +119,7 @@ VAR
         CLS;
         Found := FALSE;
         Prompt('^1Scanning ^5'+MemFileArea.AreaName+' #'+IntToStr(CompFileArea(FArea,0))+'^1 ...');
-        WHILE (DirFileRecNum <> -1) AND (NOT Abort) AND (NOT HangUp) DO
+        WHILE (DirFileRecNum <> -1) AND (NOT AbortRG) AND (NOT HangUp) DO
         BEGIN
           Seek(FileInfoFile,DirFileRecNum);
           Read(FileInfoFile,FileInfo);
@@ -164,7 +161,7 @@ BEGIN
   InitFArray(FArray);
   FArrayRecNum := 0;
   TotalFiles := 0;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   NL;
   IF (NOT PYNQ('Search all file areas? ',0,FALSE)) THEN
@@ -173,7 +170,7 @@ BEGIN
   BEGIN
     SaveFileArea := FileArea;
     FArea := 1;
-    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       AddFileAreaGIFSpecs(FArea,FArrayRecNum,TotalFiles);
       WKey;

@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
@@ -69,7 +66,7 @@ BEGIN
     REPEAT
       ReadLn(AutoMsgFile,TempStr);
       PrintACR('^3'+TempStr);
-    UNTIL EOF(AutoMsgFile) OR (Abort) OR (HangUp);
+    UNTIL EOF(AutoMsgFile) OR (AbortRG) OR (HangUp);
     Close(AutoMsgFile);
     TempStr := lRGLngStr(11,TRUE);
     UserColor(0);

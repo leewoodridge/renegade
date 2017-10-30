@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
 UNIT SysOp6;
@@ -207,7 +203,7 @@ VAR
       REPEAT
         IF (Cmd1 <> '?') THEN
         BEGIN
-          Abort := FALSE;
+          AbortRG := FALSE;
           Next := FALSE;
           CLS;
           IF (Editing) THEN
@@ -623,7 +619,7 @@ VAR
                     Include(EFlags,BaudIsActive);
                     Print('%LF^5Baud lower limit:^1%LF');
                     Counter := 1;
-                    WHILE (Counter <= 20) AND (NOT Abort) AND (NOT HangUp) DO
+                    WHILE (Counter <= 20) AND (NOT AbortRG) AND (NOT HangUp) DO
                     BEGIN
                       PrintACR(Char(Counter + 64)+'. '+IntToStr(BaudRates[Counter]));
                       Inc(Counter);
@@ -632,7 +628,7 @@ VAR
                     LoBaud := BaudRates[Ord(Cmd1) - 64];
                     Print('%LF^5Baud upper limit:^1%LF');
                     Counter := 1;
-                    WHILE (Counter <= 20) AND (NOT Abort) AND (NOT HangUp) DO
+                    WHILE (Counter <= 20) AND (NOT AbortRG) AND (NOT HangUp) DO
                     BEGIN
                       PrintACR(Char(Counter + 64)+'. '+IntToStr(BaudRates[Counter]));
                       Inc(Counter);
@@ -779,9 +775,9 @@ VAR
           CheckEvent(TempEvent1,1,1,Ok);
           IF (NOT OK) THEN
             IF (NOT PYNQ('%LFContinue inserting event? ',0,TRUE)) THEN
-              Abort := TRUE;
-        UNTIL (OK) OR (Abort) OR (HangUp);
-        IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+              AbortRG := TRUE;
+        UNTIL (OK) OR (AbortRG) OR (HangUp);
+        IF (NOT AbortRG) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
         BEGIN
           Print('%LF[> Inserting event record ...');
           Seek(EventFile,FileSize(EventFile));
@@ -918,7 +914,7 @@ VAR
   BEGIN
     IF (RecNumToList1 < 1) OR (RecNumToList1 > NumFileAreas) THEN
       RecNumToList1 := 1;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     CLS;
     PrintACR('^0 ##^4:^3Description                   ^4:^3Typ^4:^3Bsy^4:^3Time ^4:^3Len^4:^3Days   ^4:^3Execinfo');
@@ -926,7 +922,7 @@ VAR
     Reset(EventFile);
     NumDone := 0;
     WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumEvents)
-          AND (NOT Abort) AND (NOT HangUp) DO
+          AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(EventFile,(RecNumToList1 - 1));
       Read(EventFile,Event);

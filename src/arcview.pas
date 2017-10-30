@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
@@ -135,12 +132,12 @@ TYPE
     USize: LongInt;    {* output uncompressed size *}
   END;
 
-PROCEDURE AbEnd(VAR Aborted: Boolean);
+PROCEDURE AbEnd(VAR AbortRGed: Boolean);
 BEGIN
   NL;
   Print('^7** ^5Error processing archive^7 **');
-  Aborted := TRUE;
-  Abort := TRUE;
+  AbortRGed := TRUE;
+  AbortRG := TRUE;
   Next := TRUE;
 END;
 
@@ -230,18 +227,18 @@ BEGIN
   PrintACR(OutP);
 END;
 
-FUNCTION GetByte(VAR F: FILE; VAR Aborted: Boolean): Char;
+FUNCTION GetByte(VAR F: FILE; VAR AbortRGed: Boolean): Char;
 VAR
   C: Char;
   NumRead: Word;
 BEGIN
-  IF (NOT Aborted) THEN
+  IF (NOT AbortRGed) THEN
   BEGIN
     BlockRead(F,C,1,NumRead);
     IF (NumRead = 0) THEN
     BEGIN
       Close(F);
-      AbEnd(Aborted);
+      AbEnd(AbortRGed);
     END;
     GetByte := C;
   END;
@@ -253,7 +250,7 @@ PROCEDURE ZIP_Proc(VAR F: FILE;
                    NumFiles: Integer;
                    VAR TotalCompSize,
                    TotalUnCompSize: LongInt;
-                   VAR Aborted: Boolean);
+                   VAR AbortRGed: Boolean);
 VAR
   ZIP: ZipRecordType;
   C: Char;
@@ -261,27 +258,27 @@ VAR
   NumRead: Word;
   Signature: LongInt;
 BEGIN
-  WHILE (NOT Aborted) DO
+  WHILE (NOT AbortRGed) DO
   BEGIN
     BlockRead(F,Signature,4,NumRead);
     IF (Signature = $02014b50) OR (Signature = $06054b50) THEN
       Exit;
     IF (NumRead <> 4) OR (Signature <> $04034b50) THEN
     BEGIN
-      AbEnd(Aborted);
+      AbEnd(AbortRGed);
       Exit;
     END;
     BlockRead(F,ZIP,26,NumRead);
     IF (NumRead <> 26) THEN
     BEGIN
-      AbEnd(Aborted);
+      AbEnd(AbortRGed);
       Exit;
     END;
     FOR Counter := 1 TO ZIP.F_Length DO
-      Out.FileName[Counter] := GetByte(F,Aborted);
+      Out.FileName[Counter] := GetByte(F,AbortRGed);
     Out.FileName[0] := Chr(ZIP.F_Length);
     FOR Counter := 1 TO ZIP.E_Length DO
-      C := GetByte(F,Aborted);
+      C := GetByte(F,AbortRGed);
     Out.Date := ZIP.Mod_Date;
     Out.Time := ZIP.Mod_Time;
     Out.CSize := ZIP.C_Size;
@@ -297,12 +294,12 @@ BEGIN
       Out.Method := 1;
     END;
     Details(Out,Level,NumFiles,TotalCompSize,TotalUnCompSize);
-    IF (Abort) THEN
+    IF (AbortRG) THEN
       Exit;
     Seek(F,(FilePos(F) + ZIP.C_Size));
     IF (IOResult <> 0) THEN
-      AbEnd(Aborted);
-    IF (Abort) THEN
+      AbEnd(AbortRGed);
+    IF (AbortRG) THEN
       Exit;
   END;
 END;
@@ -313,7 +310,7 @@ PROCEDURE ARJ_Proc(VAR ArjFile: FILE;
                    NumFiles: Integer;
                    VAR TotalCompSize,
                    TotalUnCompSize: LongInt;
-                   VAR Aborted: Boolean);
+                   VAR AbortRGed: Boolean);
 TYPE
   ARJSignature = RECORD
     MagicNumber: SmallWord;
@@ -350,7 +347,7 @@ BEGIN
     IF (ExtSize > 0) THEN
       Seek(ArjFile,FilePos(ArjFile) + ExtSize + 4);
     BlockRead(ArjFile,Sig,SizeOf(Sig));
-    WHILE (Sig.BasicHdrSiz > 0) AND (NOT Abort) AND (IOResult = 0) DO
+    WHILE (Sig.BasicHdrSiz > 0) AND (NOT AbortRG) AND (IOResult = 0) DO
     BEGIN
       BlockRead(ArjFile,Hdr,SizeOf(Hdr),NumRead);
       Counter := 0;
@@ -369,7 +366,7 @@ BEGIN
       Out.CSize := Hdr.CompSize;
       Out.USize := Hdr.OrigSize;
       Details(Out,Level,NumFiles,TotalCompSize,TotalUnCompSize);
-      IF (Abort) THEN
+      IF (AbortRG) THEN
         Exit;
       REPEAT
         BlockRead(ArjFile,JunkByte,1);
@@ -388,7 +385,7 @@ PROCEDURE ARC_Proc(VAR F: FILE;
                    NumFiles: Integer;
                    VAR TotalCompSize,
                    TotalUnCompSize: LongInt;
-                   VAR Aborted: Boolean);
+                   VAR AbortRGed: Boolean);
 VAR
   Arc: ArcRecordType;
   C: Char;
@@ -397,8 +394,8 @@ VAR
   NumRead: Word;
 BEGIN
   REPEAT
-    C := GetByte(F,Aborted);
-    Method := Ord(GetByte(F,Aborted));
+    C := GetByte(F,AbortRGed);
+    Method := Ord(GetByte(F,AbortRGed));
     CASE Method OF
       0 : Exit;
       1,2 :
@@ -417,7 +414,7 @@ BEGIN
       BlockRead(F,Arc,23,NumRead);
       IF (NumRead <> 23) THEN
       BEGIN
-        AbEnd(Aborted);
+        AbEnd(AbortRGed);
         Exit;
       END;
       IF (Method = 1) THEN
@@ -427,7 +424,7 @@ BEGIN
         BlockRead(F,Arc.U_Size,4,NumRead);
         IF (NumRead <> 4) THEN
         BEGIN
-          AbEnd(Aborted);
+          AbEnd(AbortRGed);
           Exit;
         END;
       END;
@@ -447,21 +444,21 @@ BEGIN
       Out.CSize := Arc.C_Size;
       Out.USize := Arc.U_Size;
       Details(Out,Level,NumFiles,TotalCompSize,TotalUnCompSize);
-      IF (Abort) THEN
+      IF (AbortRG) THEN
         Exit;
       IF (Method <> 30) THEN
       BEGIN
         Seek(F,(FilePos(F) + Arc.C_Size));
         IF (IOResult <> 0) THEN
         BEGIN
-          AbEnd(Aborted);
+          AbEnd(AbortRGed);
           Exit;
         END;
       END;
     END;
-  UNTIL (C <> #$1a) OR (Aborted);
-  IF (NOT Aborted) THEN
-    AbEnd(Aborted);
+  UNTIL (C <> #$1a) OR (AbortRGed);
+  IF (NOT AbortRGed) THEN
+    AbEnd(AbortRGed);
 END;
 
 PROCEDURE ZOO_Proc(VAR F: FILE;
@@ -470,7 +467,7 @@ PROCEDURE ZOO_Proc(VAR F: FILE;
                    NumFiles: Integer;
                    VAR TotalCompSize,
                    TotalUnCompSize: LongInt;
-                   VAR Aborted: Boolean);
+                   VAR AbortRGed: Boolean);
 VAR
   ZOO: ZooRecordType;
   ZOO_LongName,
@@ -486,44 +483,44 @@ VAR
 BEGIN
 
   FOR Counter := 0 TO 19 DO
-    C := GetByte(F,Aborted);
+    C := GetByte(F,AbortRGed);
   BlockRead(F,ZOO_Tag,4,NumRead);
   IF (NumRead <> 4) THEN
-    AbEnd(Aborted);
+    AbEnd(AbortRGed);
   IF (ZOO_Tag <> $fdc4a7dc) THEN
-    AbEnd(Aborted);
+    AbEnd(AbortRGed);
   BlockRead(F,ZOO_Temp,4,NumRead);
   IF (NumRead <> 4) THEN
-    AbEnd(Aborted);
+    AbEnd(AbortRGed);
   Seek(F,ZOO_Temp);
   IF (IOResult <> 0) THEN
-    AbEnd(Aborted);
+    AbEnd(AbortRGed);
 
-  WHILE (NOT Aborted) DO
+  WHILE (NOT AbortRGed) DO
   BEGIN
     BlockRead(F,ZOO,56,NumRead);
     IF (NumRead <> 56) THEN
     BEGIN
-      AbEnd(Aborted);
+      AbEnd(AbortRGed);
       Exit;
     END;
     IF (ZOO.Tag <> $fdc4a7dc) THEN
-      AbEnd(Aborted);
-    IF (Abort) OR (ZOO.Next = 0) THEN
+      AbEnd(AbortRGed);
+    IF (AbortRG) OR (ZOO.Next = 0) THEN
       Exit;
-    NamLen := Ord(GetByte(F,Aborted));
-    DirLen := Ord(GetByte(F,Aborted));
+    NamLen := Ord(GetByte(F,AbortRGed));
+    DirLen := Ord(GetByte(F,AbortRGed));
     ZOO_LongName := '';
     ZOO_DirName := '';
 
     IF (NamLen > 0) THEN
       FOR Counter := 1 TO NamLen DO
-        ZOO_LongName := ZOO_LongName + GetByte(F,Aborted);
+        ZOO_LongName := ZOO_LongName + GetByte(F,AbortRGed);
 
     IF (DirLen > 0) THEN
     BEGIN
       FOR Counter := 1 TO DirLen DO
-        ZOO_DirName := ZOO_DirName + GetByte(F,Aborted);
+        ZOO_DirName := ZOO_DirName + GetByte(F,AbortRGed);
       IF (ZOO_DirName[Length(ZOO_DirName)] <> '/') THEN
         ZOO_DirName := ZOO_DirName + '/';
     END;
@@ -552,12 +549,12 @@ BEGIN
     END;
     IF NOT (ZOO.Deleted = 1) THEN
       Details(Out,Level,NumFiles,TotalCompSize,TotalUnCompSize);
-    IF (Abort) THEN
+    IF (AbortRG) THEN
       Exit;
     Seek(F,ZOO.Next);
     IF (IOResult <> 0) THEN
     BEGIN
-      AbEnd(Aborted);
+      AbEnd(AbortRGed);
       Exit;
     END;
   END;
@@ -569,7 +566,7 @@ PROCEDURE LZH_Proc(VAR F: FILE;
                    NumFiles: Integer;
                    VAR TotalCompSize,
                    TotalUnCompSize: LongInt;
-                   VAR Aborted: Boolean);
+                   VAR AbortRGed: Boolean);
 VAR
   LZH: LZHRecordType;
   C,
@@ -577,41 +574,41 @@ VAR
   Counter: Integer;
   NumRead: Word;
 BEGIN
-  WHILE (NOT Aborted) DO
+  WHILE (NOT AbortRGed) DO
   BEGIN
-    C := GetByte(F,Aborted);
+    C := GetByte(F,AbortRGed);
     IF (C = #0) THEN
       Exit
     ELSE
       LZH.H_Length := Ord(C);
-    C := GetByte(F,Aborted);
+    C := GetByte(F,AbortRGed);
     LZH.H_Cksum := Ord(C);
     BlockRead(F,LZH.Method,5,NumRead);
     IF (NumRead <> 5) THEN
     BEGIN
-      AbEnd(Aborted);
+      AbEnd(AbortRGed);
       Exit;
     END;
     IF ((LZH.Method[1] <> '-') OR (LZH.Method[2] <> 'l') OR (LZH.Method[3] <> 'h')) THEN
     BEGIN
-      AbEnd(Aborted);
+      AbEnd(AbortRGed);
       Exit;
     END;
     BlockRead(F,LZH.C_Size,15,NumRead);
     IF (NumRead <> 15) THEN
     BEGIN
-      AbEnd(Aborted);
+      AbEnd(AbortRGed);
       Exit;
     END;
     FOR Counter := 1 TO LZH.F_Length DO
-      Out.FileName[Counter] := GetByte(F,Aborted);
+      Out.FileName[Counter] := GetByte(F,AbortRGed);
     Out.FileName[0] := Chr(LZH.F_Length);
     IF ((LZH.H_Length - LZH.F_Length) = 22) THEN
     BEGIN
       BlockRead(F,LZH.CRC,2,NumRead);
       IF (NumRead <> 2) THEN
       BEGIN
-        AbEnd(Aborted);
+        AbEnd(AbortRGed);
         Exit;
       END;
     END;
@@ -629,8 +626,8 @@ BEGIN
     Details(Out,Level,NumFiles,TotalCompSize,TotalUnCompSize);
     Seek(F,(FilePos(F) + LZH.C_Size));
     IF (IOResult <> 0) THEN
-      AbEnd(Aborted);
-    IF (Abort) THEN
+      AbEnd(AbortRGed);
+    IF (AbortRG) THEN
       Exit;
   END;
 END;
@@ -651,22 +648,20 @@ PROCEDURE ViewInternalArchive(FileName: AStr);
 VAR
   LZH_Method: ARRAY [1..5] OF Char;
   F: FILE;
-  (*
-  DirInfo: SearchRec;
-  *)
+  DirInfo: {TRawByte}SearchRec;
   Out: OutRec;
   C: Char;
   LZH_H_Length,
   Counter,
   ArcType: Byte;
-  RCode: SmallInt;
+  RCode: Byte;
   FileType,
   Level,
   NumFiles: Integer;
   NumRead: Word;
   TotalUnCompSize,
   TotalCompSize: LongInt;
-  Aborted: Boolean;
+  AbortRGed: Boolean;
 BEGIN
   FileName := SQOutSp(FileName);
 
@@ -677,7 +672,7 @@ BEGIN
       FileName := DirInfo.Name;
   END;
 
-  IF ((Exist(FileName)) AND (NOT Abort) AND (NOT HangUp)) THEN
+  IF ((Exist(FileName)) AND (NOT AbortRG) AND (NOT HangUp)) THEN
   BEGIN
 
     ArcType := 1;
@@ -692,45 +687,45 @@ BEGIN
          (General.FileArcInfo[ArcType].ListLine[2] IN ['1'..'5']) AND
          (Length(General.FileArcInfo[ArcType].ListLine) = 2) THEN
       BEGIN
-        Aborted := FALSE;
-        Abort := FALSE;
+        AbortRGed := FALSE;
+        AbortRG := FALSE;
         Next := FALSE;
         NL;
         PrintACR('^3'+StripName(FileName)+':');
         NL;
-        IF (NOT Abort) THEN
+        IF (NOT AbortRG) THEN
         BEGIN
           Assign(F,FileName);
           Reset(F,1);
-          C := GetByte(F,Aborted);
+          C := GetByte(F,AbortRGed);
           CASE C OF
             #$1a : FileType := 1;
              'P' : BEGIN
-                     IF (GetByte(F,Aborted) <> 'K') THEN
-                       AbEnd(Aborted);
+                     IF (GetByte(F,AbortRGed) <> 'K') THEN
+                       AbEnd(AbortRGed);
                      FileType := 2;
                    END;
              'Z' : BEGIN
                      FOR Counter := 0 TO 1 DO
-                       IF (GetByte(F,Aborted) <> 'O') THEN
-                         AbEnd(Aborted);
+                       IF (GetByte(F,AbortRGed) <> 'O') THEN
+                         AbEnd(AbortRGed);
                      FileType := 3;
                    END;
              #96 : BEGIN
-                     IF (GetByte(F,Aborted) <> #234) THEN
-                       AbEnd(Aborted);
+                     IF (GetByte(F,AbortRGed) <> #234) THEN
+                       AbEnd(AbortRGed);
                      FileType := 5;
                    END;
           ELSE
           BEGIN
             LZH_H_Length := Ord(C);
-            C := GetByte(F,Aborted);
+            C := GetByte(F,AbortRGed);
             FOR Counter := 1 TO 5 DO
-              LZH_Method[Counter] := GetByte(F,Aborted);
+              LZH_Method[Counter] := GetByte(F,AbortRGed);
             IF ((LZH_Method[1] = '-') AND (LZH_Method[2] = 'l') AND (LZH_Method[3] = 'h')) THEN
               FileType := 4
             ELSE
-              AbEnd(Aborted);
+              AbEnd(AbortRGed);
           END;
         END;
         Reset(F,1);
@@ -742,11 +737,11 @@ BEGIN
         PrintACR('^3 Length         Size Now     %    Method     Date    Time  FileName');
         PrintACR('^4------------- ------------- --- ---------- -------- ------ ------------');
         CASE FileType OF
-          1 : ARC_Proc(F,Out,Level,NumFiles,TotalCompSize,TotalUnCompSize,Aborted);
-          2 : ZIP_Proc(F,Out,Level,NumFiles,TotalCompSize,TotalUnCompSize,Aborted);
-          3 : ZOO_Proc(F,Out,Level,NumFiles,TotalCompSize,TotalUnCompSize,Aborted);
-          4 : LZH_Proc(F,Out,Level,NumFiles,TotalCompSize,TotalUnCompSize,Aborted);
-          5 : ARJ_Proc(F,Out,Level,NumFiles,TotalCompSize,TotalUnCompSize,Aborted);
+          1 : ARC_Proc(F,Out,Level,NumFiles,TotalCompSize,TotalUnCompSize,AbortRGed);
+          2 : ZIP_Proc(F,Out,Level,NumFiles,TotalCompSize,TotalUnCompSize,AbortRGed);
+          3 : ZOO_Proc(F,Out,Level,NumFiles,TotalCompSize,TotalUnCompSize,AbortRGed);
+          4 : LZH_Proc(F,Out,Level,NumFiles,TotalCompSize,TotalUnCompSize,AbortRGed);
+          5 : ARJ_Proc(F,Out,Level,NumFiles,TotalCompSize,TotalUnCompSize,AbortRGed);
         END;
         Final(NumFiles,TotalCompSize,TotalUnCompSize);
         Close(F);
@@ -789,12 +784,12 @@ BEGIN
   LastGif := FALSE;
   AllowContinue := TRUE;
   Found := FALSE;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   RecNo(FileInfo,FileName,DirFileRecNum);
   IF (BadDownloadPath) THEN
     Exit;
-  WHILE (DirFileRecNum <> -1) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (DirFileRecNum <> -1) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     Seek(FileInfoFile,DirFileRecNum);
     Read(FileInfoFile,FileInfo);
@@ -849,4 +844,4 @@ BEGIN
   LastError := IOResult;
 END;
 
-END.
+END.

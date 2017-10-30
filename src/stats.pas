@@ -1,8 +1,40 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-{$MODE TP}
-{$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
+{*******************************************************}
+{                                                       }
+{   Renegade BBS                                        }
+{                                                       }
+{   Copyright (c) 1990-2013 The Renegade Dev Team       }
+{   Copyleft  (ↄ) 2016 Renegade BBS                     }
+{                                                       }
+{   This file is part of Renegade BBS                   }
+{                                                       }
+{   Renegade is free software: you can redistribute it  }
+{   and/or modify it under the terms of the GNU General }
+{   Public License as published by the Free Software    }
+{   Foundation, either version 3 of the License, or     }
+{   (at your option) any later version.                 }
+{                                                       }
+{   Renegade is distributed in the hope that it will be }
+{   useful, but WITHOUT ANY WARRANTY; without even the  }
+{   implied warranty of MERCHANTABILITY or FITNESS FOR  }
+{   A PARTICULAR PURPOSE.  See the GNU General Public   }
+{   License for more details.                           }
+{                                                       }
+{   You should have received a copy of the GNU General  }
+{   Public License along with Renegade.  If not, see    }
+{   <http://www.gnu.org/licenses/>.                     }
+{                                                       }
+{*******************************************************}
+{   _______                                  __         }
+{  |   _   .-----.-----.-----.-----.---.-.--|  .-----.  }
+{  |.  l   |  -__|     |  -__|  _  |  _  |  _  |  -__|  }
+{  |.  _   |_____|__|__|_____|___  |___._|_____|_____|  }
+{  |:  |   |                 |_____|                    }
+{  |::.|:. |                                            }
+{  `--- ---'                                            }
+{*******************************************************}
+
+{$i Renegade.Common.Defines.inc}
+
 UNIT STATS;
 
 INTERFACE
@@ -36,7 +68,8 @@ IMPLEMENTATION
 USES
   File0,
   File1,
-  File11;
+  File11,
+  SysUtils;
 
 FUNCTION MaxR(R,R1: Real): Real;
 BEGIN
@@ -106,7 +139,7 @@ BEGIN
           Top10User[Counter1] := Top10User[Counter1 - 1];
         Top10User[Counter].UNum := UNum;
         Top10User[Counter].Info := Info;
-        Counter := 10;
+        {Counter := 10;}
       END;
 END;
 
@@ -124,7 +157,7 @@ BEGIN
         Top20File[Counter].DirNum := DirNum;
         Top20File[Counter].DirRecNum := DirRecNum;
         Top20File[Counter].Downloaded := Downloaded;
-        Counter := 20;
+        {Counter := 20;}
       END;
 END;
 
@@ -135,11 +168,11 @@ VAR
   Info: Real;
 BEGIN
   InitTop10UserArray(Top10User);
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   Reset(UserFile);
   UNum := 1;
-  WHILE (UNum <= (FileSize(UserFile) - 1)) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (UNum <= (FileSize(UserFile) - 1)) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     IF (ExcludeUserNum = 0) OR (UNum <> ExcludeUserNum) THEN
     BEGIN
@@ -181,7 +214,7 @@ BEGIN
     RecNo(F,'*.*',DirFileRecNum);
     IF (BadDownloadPath) THEN
       Exit;
-    WHILE (DirFileRecNum <> -1) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (DirFileRecNum <> -1) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(FileInfoFile,DirFileRecNum);
       Read(FileInfoFile,F);
@@ -206,16 +239,16 @@ BEGIN
   ConfSystem := FALSE;
   IF (SaveConfSystem) THEN
     NewCompTables;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   FArea := 1;
-  WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Next) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     SearchTop20AreaFileSpec(FArea,Top20File);
     WKey;
     IF (Next) THEN
     BEGIN
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
     END;
     Inc(FArea);
@@ -234,7 +267,7 @@ VAR
   Counter,
   Counter1: Byte;
 BEGIN
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   CLS;
   PrintACR('^5'+Center('-=[ Top 10 '+Title+' ]=-',78,TRUE));
@@ -242,7 +275,7 @@ BEGIN
   PrintACR('^5##   User Name         '+Center(Header,55,TRUE));
   NL;
   Counter := 1;
-  WHILE (Counter <= 10) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (Counter <= 10) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     User.Name := '';
     IF (Top10User[Counter].UNum >= 1) THEN
@@ -272,7 +305,7 @@ VAR
   AddBatch: Boolean;
 BEGIN
   SaveFileArea := FileArea;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   CLS;
   PrintACR('^5'+Center('-=[ Top 20 Files Downloaded ]=-',78,TRUE));
@@ -339,7 +372,7 @@ BEGIN
         Seek(FileInfoFile,Top20File[Counter].DirRecNum);
         Read(FileInfoFile,F);
         NL;
-        DLX(F,Top20File[Counter].DirRecNum,FALSE,Abort);
+        DLX(F,Top20File[Counter].DirRecNum,FALSE,AbortRG);
         Close(FileInfoFile);
         Close(ExtInfoFile);
       END;
@@ -454,4 +487,4 @@ BEGIN
   END;
 END;
 
-END.
+END.

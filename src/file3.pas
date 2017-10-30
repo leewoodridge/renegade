@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
 UNIT File3;
@@ -34,7 +30,7 @@ BEGIN
       Exit;
     NL;
     Print('^1Checking ^5'+MemFileArea.AreaName+' #'+IntToStr(CompFileArea(FArea,0))+'^1 ...');
-    WHILE (DirFileRecNum <> - 1) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (DirFileRecNum <> - 1) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(FileInfoFile,DirFileRecNum);
       Read(FileInfoFile,FileInfo);
@@ -85,7 +81,7 @@ BEGIN
   CheckDiz := PYNQ('%LFReimport descriptions? ',0,FALSE);
   SaveTempPause := TempPause;
   TempPause := FALSE;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   NL;
   IF (NOT PYNQ('Recheck all file areas? ',0,FALSE)) THEN
@@ -97,7 +93,7 @@ BEGIN
     IF (SaveConfSystem) THEN
       NewCompTables;
     FArea := 1;
-    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Checkfiles(FArea,CheckDiz);
       WKey;

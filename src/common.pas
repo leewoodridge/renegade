@@ -1,10 +1,42 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-{$A+,B-,D-,E-,F+,I-,L-,N+,O-,R-,S-,V-}
-{$PACKRECORDS c}
+{*******************************************************}
+{                                                       }
+{   Renegade BBS                                        }
+{                                                       }
+{   Copyright (c) 1990-2013 The Renegade Dev Team       }
+{   Copyleft  (â†„) 2016 Renegade BBS                     }
+{                                                       }
+{   This file is part of Renegade BBS                   }
+{                                                       }
+{   Renegade is free software: you can redistribute it  }
+{   and/or modify it under the terms of the GNU General }
+{   Public License as published by the Free Software    }
+{   Foundation, either version 3 of the License, or     }
+{   (at your option) any later version.                 }
+{                                                       }
+{   Renegade is distributed in the hope that it will be }
+{   useful, but WITHOUT ANY WARRANTY; without even the  }
+{   implied warranty of MERCHANTABILITY or FITNESS FOR  }
+{   A PARTICULAR PURPOSE.  See the GNU General Public   }
+{   License for more details.                           }
+{                                                       }
+{   You should have received a copy of the GNU General  }
+{   Public License along with Renegade.  If not, see    }
+{   <http://www.gnu.org/licenses/>.                     }
+{                                                       }
+{*******************************************************}
+{   _______                                  __         }
+{  |   _   .-----.-----.-----.-----.---.-.--|  .-----.  }
+{  |.  l   |  -__|     |  -__|  _  |  _  |  _  |  -__|  }
+{  |.  _   |_____|__|__|_____|___  |___._|_____|_____|  }
+{  |:  |   |                 |_____|                    }
+{  |::.|:. |                                            }
+{  `--- ---'                                            }
+{*******************************************************}
 
-UNIT Common;
+{$i Renegade.Common.Defines.inc}
+
+
+Unit Common;
 
 INTERFACE
 
@@ -12,7 +44,8 @@ USES
   Crt,
   Dos,
   MyIO,
-  TimeFunc;
+  TimeFunc,
+  SysUtils;
 
 {$I RECORDS.PAS}
 
@@ -20,10 +53,11 @@ CONST
   StrLen = 119;
 
 Type
-  BBSVersion = Packed Record
+  BBSVersion = Record
    Major,
    Minor,
    Patch : Byte;
+   Qualifier : String[6]; // -alpha, -beta, -dev
    OS : Astr;
   End;
 
@@ -94,7 +128,7 @@ Type
     IsCDRom,
     IsPaused,
     IsAutoLogOff,
-    IsKeyboardAbort,
+    IsKeyboardAbortRG,
     IsTransferOk);
 
   TransferFlagSet = SET OF TransferFlagType;
@@ -202,8 +236,8 @@ CONST
   ChatChannel: Integer = 0;    { What chat channel are we IN? }
   DisplayingMenu: Boolean = FALSE; { are we displaying a menu?       }
   InVisEdit: Boolean = FALSE;      { are we IN the visual editor? }
-  MenuAborted: Boolean = FALSE;  { was the menu Aborted? }
-  AllowAbort: Boolean = TRUE;   { are Aborts allowed?          }
+  MenuAbortRGed: Boolean = FALSE;  { was the menu AbortRGed? }
+  AllowAbortRG: Boolean = TRUE;   { are AbortRGs allowed?          }
   MCIAllowed: Boolean = TRUE;   { is mci allowed? }
   ColorAllowed: Boolean = TRUE;  { is color allowed? }
   Echo: Boolean = TRUE;      { is Text being echoed? (FALSE=use echo Chr)}
@@ -301,7 +335,7 @@ VAR
 
   General: GeneralRecordType;      { configuration information       }
 
-  DirInfo: SearchRec;
+  DirInfo: TRawByteSearchRec;
 
   { LastCallers }
   LastCallerFile : FILE OF LastCallerRec;
@@ -420,7 +454,7 @@ VAR
   MenuRecNumArray: ARRAY [1..MaxMenus] OF Integer;
   CmdNumArray: ARRAY [1..MaxMenus] OF Byte;
   MenuStack: ARRAY [1..MaxMenus] OF Byte;          { menu stack           }
-  MenuKeys: AStr;                                  { keys TO Abort menu display WITH    }
+  MenuKeys: AStr;                                  { keys TO AbortRG menu display WITH    }
   NumMenus,
   NumCmds,
   GlobalCmds,
@@ -478,8 +512,8 @@ VAR
   FreeTime: LongInt;       { free time               }
 
   BlankMenuNow,         { is the wfcmenu blanked out? }
-  Abort,
-  Next,      { global Abort AND Next }
+  AbortRG,
+  Next,      { global AbortRG AND Next }
   RQArea,
   FQArea,
   MQArea,
@@ -489,6 +523,7 @@ VAR
 procedure Sound(hz: Word; duration: Word);
 function Ticks: LongInt;
 {$ENDIF}
+{ Returns the BBS Version Information }
 Function GetBBSVersion : BBSVersion;
 FUNCTION GetC(c: Byte): STRING;
 PROCEDURE ShowColors;
@@ -586,7 +621,7 @@ PROCEDURE SysOpLog(s: AStr);
 FUNCTION StrToInt(S: Str11): LongInt;
 FUNCTION RealToStr(R: Real; W,D: Byte): STRING;
 FUNCTION ValueR(S: AStr): REAL;
-PROCEDURE ShellDos(MakeBatch: Boolean; CONST Command: AStr; VAR ResultCode: Integer);
+PROCEDURE ShellDos(MakeBatch: Boolean; CONST Command: AStr; Var ResultCode: Byte);
 PROCEDURE SysOpShell;
 PROCEDURE RedrawForANSI;
 PROCEDURE Star(InString: AStr);
@@ -643,7 +678,7 @@ PROCEDURE InputIntegerWOC(S: AStr; VAR I: SmallInt; InputFlags: InputFlagSet; Lo
 PROCEDURE InputByteWC(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte; VAR Changed: Boolean);
 PROCEDURE InputByteWOC(S: AStr; VAR B: Byte; InputFlags: InputFlagSet; LowNum,HighNum: Byte);
 PROCEDURE InputDefault(VAR S: STRING; v: STRING; MaxLen: Byte; InputFlags: InputFlagSet; LineFeed: Boolean);
-PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; v: STRING; Abortable: Boolean);
+PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; v: STRING; AbortRGable: Boolean);
 PROCEDURE InputWN1(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
 PROCEDURE InputWNWC(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; VAR Changed: Boolean);
 PROCEDURE InputMain(VAR s: STRING; MaxLen: Byte; InputFlags: InputFlagSet);
@@ -694,8 +729,8 @@ USES
   SysOp12,
   Vote
 {$IFDEF WIN32}
-  ,VPSysLow
-  ,VPUtils
+{  ,VPSysLow
+  ,VPUtils}
   ,Windows
 {$ENDIF}
   ;
@@ -707,8 +742,11 @@ begin
 end;
 
 function Ticks: LongInt;
+var
+  Hour,Min,Sec,HSec : word;
 begin
-  Ticks := GetTimeMSec div 55;
+  GetTime(Hour,Min,Sec,HSec);
+  Ticks := HSec div 55;
 end;
 {$ENDIF}
 
@@ -794,15 +832,25 @@ Begin
 
   {$IFDEF UNIX } OsType := 'Unix';  {$ENDIF}
   {$IFDEF LINUX} OsType := 'Linux'; {$ENDIF}
-  {$IFDEF WIN32} OsType := 'Win32'; {$ENDIF}
-  {$IFDEF WIN64} OsType := 'Win64'; {$ENDIF}
-  {$IFDEF MSDOS} OsType := 'DOS';   {$ENDIF}
+  {$IFDEF FREEBSD} OsTYpe := 'FreeBSD'; {$ENDIF}
 
+  {$IFDEF WINDOWS}
+     OsType := 'Win';
+  {$ENDIF}
+
+  {$IFDEF CPU64}
+    OsType := OsType + '64';
+  {$ELSE CPU32}
+    OsType := OsType + '32';
+  {$ENDIF}
+  {$IFDEF MSDOS} OsType := 'DOS'; {$ENDIF}
+  {$IFDEF DARWIN} OsType := 'OS/X'; {$ENDIF}
   With TBBSVersionRecord Do
   Begin
        Major := 2;
        Minor := 0;
        Patch := 0;
+       Qualifier := '-dev';
        OS    := OsType;
   End;
 
@@ -928,9 +976,9 @@ BEGIN
   Common3.InputDefault(S,v,MaxLen,InputFlags,LineFeed);
 END;
 
-PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; v: STRING; Abortable: Boolean);
+PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; v: STRING; AbortRGable: Boolean);
 BEGIN
-  Common3.InputFormatted(DisplayStr,InputStr,v,Abortable);
+  Common3.InputFormatted(DisplayStr,InputStr,v,AbortRGable);
 END;
 
 PROCEDURE InputWN1(DisplayStr: AStr; VAR InputStr: AStr; MaxLen: Byte; InputFlags: InputFlagSet; VAR Changed: Boolean);
@@ -1159,7 +1207,7 @@ END;
 
 FUNCTION GetFileSize(FileName: AStr): LongInt;
 VAR
-  DirInfo1: SearchRec;
+  DirInfo1: TRawByteSearchRec;
   FSize: LongInt;
 BEGIN
   FindFirst(FileName,AnyFile - Directory - VolumeID - DOS.Hidden - SysFile,DirInfo1);
@@ -1245,7 +1293,7 @@ BEGIN
       ELSE
         PrintACR(S);
     END;
-  UNTIL (TotLoad >= StrPointer.TextSize) OR (Abort) OR (HangUp);
+  UNTIL (TotLoad >= StrPointer.TextSize) OR (AbortRG) OR (HangUp);
   Close(RGStrFile);
   LastError := IOResult;
   RGSysCfgStr := S;
@@ -1288,7 +1336,7 @@ BEGIN
       ELSE
         PrintACR(S);
     END;
-  UNTIL (TotLoad >= StrPointer.TextSize) OR (Abort) OR (HangUp);
+  UNTIL (TotLoad >= StrPointer.TextSize) OR (AbortRG) OR (HangUp);
   Close(RGStrFile);
   LastError := IOResult;
   RGNoteStr := S;
@@ -1331,7 +1379,7 @@ BEGIN
       ELSE
         PrintACR(S);
     END;
-  UNTIL (TotLoad >= StrPointer.TextSize) OR (Abort) OR (HangUp);
+  UNTIL (TotLoad >= StrPointer.TextSize) OR (AbortRG) OR (HangUp);
   Close(RGStrFile);
   LastError := IOResult;
   RGMainStr := S;
@@ -1374,7 +1422,7 @@ BEGIN
       ELSE
         PrintACR(S);
     END;
-  UNTIL (TotLoad >= StrPointer.TextSize) OR (Abort) OR (HangUp);
+  UNTIL (TotLoad >= StrPointer.TextSize) OR (AbortRG) OR (HangUp);
   Close(RGStrFile);
   LastError := IOResult;
   lRGLNGStr := S;
@@ -2122,7 +2170,7 @@ BEGIN
   END {CASE NextState} ;
 END {AnsiWrite} ;
 
-PROCEDURE ShellDos(MakeBatch: Boolean; CONST Command: AStr; VAR ResultCode: Integer);
+PROCEDURE ShellDos(MakeBatch: Boolean; CONST Command: AStr; VAR ResultCode: Byte);
 VAR
   BatFile: Text;
   FName,
@@ -2224,7 +2272,7 @@ BEGIN
      '%' : IF (MCIAllowed) AND (Length(InString) > (Counter + 1)) THEN
            BEGIN
              TempStr := AllCaps(MCI('%' + InString[Counter + 1] + InString[Counter + 2]));
-             IF (Copy(TempStr,1,3) <> '%' + UpCase(InString[Counter + 1]) + UpCase(InString[Counter + 2])) THEN
+             IF (Copy(TempStr,1,3) <> '%' + UpCase(InString[Counter + 1]) + UpperCase(InString[Counter + 2])) THEN
                Inc(StrLen,Length(TempStr) - 3);
            END;
     END;
@@ -2594,12 +2642,12 @@ END;
 
 PROCEDURE Prompt(CONST InString: STRING);
 VAR
-  SaveAllowAbort: Boolean;
+  SaveAllowAbortRG: Boolean;
 BEGIN
-  SaveAllowAbort := AllowAbort;
-  AllowAbort := FALSE;
+  SaveAllowAbortRG := AllowAbortRG;
+  AllowAbortRG := FALSE;
   PrintMain(InString);
-  AllowAbort := SaveAllowAbort;
+  AllowAbortRG := SaveAllowAbortRG;
 END;
 
 PROCEDURE Print(CONST Instring: STRING);
@@ -3288,23 +3336,23 @@ PROCEDURE WKey;
 VAR
   Cmd: Char;
 BEGIN
-  IF (NOT AllowAbort) OR (Abort) OR (HangUp) OR (Empty) THEN
+  IF (NOT AllowAbortRG) OR (AbortRG) OR (HangUp) OR (Empty) THEN
     Exit;
   Cmd := Char(GetKey);
   IF (DisplayingMenu) AND (Pos(UpCase(Cmd),MenuKeys) > 0) THEN
   BEGIN
-    MenuAborted := TRUE;
-    Abort := TRUE;
+    MenuAbortRGed := TRUE;
+    AbortRG := TRUE;
     Buf := Buf + UpCase(Cmd);
   END
   ELSE
     CASE UpCase(Cmd) OF
       ' ',^C,^X,^K :
-            Abort := TRUE;
+            AbortRG := TRUE;
       'N',^N :
             IF (Reading_A_Msg) THEN
             BEGIN
-              Abort := TRUE;
+              AbortRG := TRUE;
               Next := TRUE;
             END;
       'P',^S :
@@ -3313,7 +3361,7 @@ BEGIN
         IF (Cmd <> #0) THEN
           Buf := Buf + Cmd;
     END;
-  IF (Abort) THEN
+  IF (AbortRG) THEN
   BEGIN
     Com_Purge_Send;
     NL;
@@ -3330,11 +3378,11 @@ VAR
   s: STRING;
   Justify: Byte;
 BEGIN
-  IF (Abort) AND (AllowAbort) THEN
+  IF (AbortRG) AND (AllowAbortRG) THEN
     Exit;
   IF (HangUp) THEN
   BEGIN
-    Abort := TRUE;
+    AbortRG := TRUE;
     Exit;
   END;
 
@@ -3352,7 +3400,7 @@ BEGIN
           s := s + '%';
           Continue;
         END;
-        Inc(i,2);
+        {Inc(i,2);}
         IF (Length(ss) >= i + 2) AND (ss[i + 1] IN ['#','{','}']) THEN
         BEGIN
           IF (ss[i + 1] = '}') THEN
@@ -3364,11 +3412,11 @@ BEGIN
           IF (ss[i + 2] IN ['0'..'9']) THEN
           BEGIN
             X2 := Ord(ss[i + 2]) - 48;
-            Inc(i, 2);
+            {Inc(i, 2);}
             IF (ss[i + 1] IN ['0'..'9']) THEN
             BEGIN
               X2 := X2 * 10 + Ord(ss[i + 1]) - 48;
-              Inc(i, 1);
+              {Inc(i, 1);}
             END;
             IF (X2 > 0) THEN
               CASE Justify OF
@@ -3408,18 +3456,18 @@ BEGIN
     s := StripColor(s);
 
   i := 1;
-  IF ((NOT Abort) OR (NOT AllowAbort)) AND (NOT HangUp) THEN  { can't change IN loop }
+  IF ((NOT AbortRG) OR (NOT AllowAbortRG)) AND (NOT HangUp) THEN  { can't change IN loop }
     WHILE (i <= Length(s)) DO
     BEGIN
       CASE s[i] OF
         '%' : IF MCIAllowed AND (i + 1 < Length(s)) THEN
               BEGIN
-                IF (UpCase(s[i + 1]) = 'P') AND (UpCase(s[i + 2]) = 'A') THEN { %PA Pause }
+                IF (UpCase(s[i + 1]) = 'P') AND (UpperCase(s[i + 2]) = 'A') THEN { %PA Pause }
                 BEGIN
                   Inc(i,2);
                   PauseScr(FALSE)
                 END
-                ELSE IF (UpCase(s[i + 1]) = 'P') AND (UpCase(s[i + 2]) = 'E') THEN { %PE Null Pause }
+                ELSE IF (UpCase(s[i + 1]) = 'P') AND (UpperCase(s[i + 2]) = 'E') THEN { %PE Null Pause }
                   BEGIN
                     Inc(i,2);
                     PauseIsNull := TRUE;
@@ -3511,9 +3559,9 @@ PROCEDURE PrintACR(InString: STRING);
 VAR
   TurnOff: Boolean;
 BEGIN
-  IF (AllowAbort) AND (Abort) THEN
+  IF (AllowAbortRG) AND (AbortRG) THEN
     Exit;
-  Abort := FALSE;
+  AbortRG := FALSE;
   TurnOff := (InString[Length(Instring)] = #29);
   IF (TurnOff) THEN
     Dec(InString[0]);
@@ -3521,7 +3569,7 @@ BEGIN
   IF (NOT CROff) AND NOT (TurnOff) THEN
     InString := InString + ^M^J;
   PrintMain(InString);
-  IF (Abort) THEN
+  IF (AbortRG) THEN
   BEGIN
     CurrentColor := (255 - CurrentColor);
     UserColor(1);
@@ -3537,12 +3585,12 @@ VAR
   c: Char;
   SaveTempPause,
   ToggleBack,
-  SaveAllowAbort: Boolean;
+  SaveAllowAbortRG: Boolean;
 BEGIN
   PrintingFile := TRUE;
-  SaveAllowAbort := AllowAbort;
-  AllowAbort := TRUE;
-  Abort := FALSE;
+  SaveAllowAbortRG := AllowAbortRG;
+  AllowAbortRG := TRUE;
+  AbortRG := FALSE;
   Next := FALSE;
   ToggleBack := FALSE;
   SaveTempPause := TempPause;
@@ -3565,9 +3613,9 @@ BEGIN
       NoFile := TRUE
     ELSE
     BEGIN
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
-      WHILE (NOT EOF(fil)) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (NOT EOF(fil)) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
         ps := 0;
         REPEAT
@@ -3590,7 +3638,7 @@ BEGIN
     END;
     NoFile := FALSE;
   END;
-  AllowAbort := SaveAllowAbort;
+  AllowAbortRG := SaveAllowAbortRG;
   PrintingFile := FALSE;
   CtrlJOff := FALSE;
   IF (ToggleBack) THEN
@@ -3634,7 +3682,7 @@ End;
 
 FUNCTION Exist(FileName: AStr): Boolean;
 VAR
-  DirInfo1: SearchRec;
+  DirInfo1: TRawByteSearchRec;
 BEGIN
   FindFirst(SQOutSp(FileName),AnyFile,DirInfo1);
   Exist := (DOSError = 0);
@@ -3642,7 +3690,7 @@ END;
 
 FUNCTION ExistDir(Path: PathStr): Boolean;
 VAR
-  DirInfo1: SearchRec;
+  DirInfo1: TRawByteSearchRec;
 BEGIN
   Path := AllCaps(BSlash(Path,FALSE));
   FindFirst(Path,AnyFile,DirInfo1);
@@ -4012,7 +4060,7 @@ END;
 
 FUNCTION MaxChatRec: LongInt;
 VAR
-  DirInfo1: SearchRec;
+  DirInfo1: TRawByteSearchRec;
 BEGIN
   FindFirst(General.TempPath+'MSG'+IntToStr(ThisNode)+'.TMP',AnyFile,DirInfo1);
   IF (DOSError = 0) THEN
@@ -4023,7 +4071,7 @@ END;
 
 FUNCTION MaxNodes: Byte;
 VAR
-  DirInfo1: SearchRec;
+  DirInfo1: TRawByteSearchRec;
 BEGIN
   FindFirst(General.DataPath+'MULTNODE.DAT',AnyFile,DirInfo1);
   IF (DOSError = 0) THEN
@@ -4118,7 +4166,7 @@ END;
 
 FUNCTION MaxUsers: Integer;
 VAR
-  DirInfo1: SearchRec;
+  DirInfo1: TRawByteSearchRec;
 BEGIN
   FindFirst(General.DataPath+'USERS.DAT',AnyFile,DirInfo1);
   IF (DOSError = 0) THEN
@@ -4129,7 +4177,7 @@ END;
 
 FUNCTION MaxIDXRec: Integer;
 VAR
-  DirInfo1: SearchRec;
+  DirInfo1: TRawByteSearchRec;
 BEGIN
   FindFirst(General.DataPath+'USERS.IDX',AnyFile,DirInfo1);
   IF (DOSError = 0) THEN
@@ -4142,7 +4190,7 @@ END;
 
 FUNCTION HiMsg: Word;
 VAR
-  DirInfo1: SearchRec;
+  DirInfo1: TRawByteSearchRec;
 BEGIN
   FindFirst(General.MsgPath+MemMsgArea.FileName+'.HDR',AnyFile,DirInfo1);
   IF (DOSError = 0) THEN
@@ -4219,7 +4267,7 @@ BEGIN
       c := Chr(Mem[VidSeg:(160 * (YPos - 1) + 2 * (XPos - 1))]);
 {$ENDIF}
 {$IFDEF WIN32}
-      c := SysReadCharAt(XPos - 1, YPos - 1);
+{      c := SysReadCharAt(XPos - 1, YPos - 1);}
 {$ENDIF}
       IF (c = #0) THEN
         c := #32;
@@ -4255,7 +4303,7 @@ BEGIN
     IF (AllowExit) AND (TempDirPath = '') THEN
     BEGIN
       NL;
-      Print('Aborted!');
+      Print('AbortRGed!');
     END
     ELSE IF (TempDirPath = '') THEN
     BEGIN
@@ -4349,7 +4397,7 @@ END;
 PROCEDURE PurgeDir(s: AStr; SubDirs: Boolean);
 VAR
   (*
-  DirInfo1: SearchRec;
+  DirInfo1: TRawByteSearchRec;
   *)
   odir: STRING[80];
 BEGIN
@@ -4390,7 +4438,7 @@ END;
 PROCEDURE Star(InString: AStr);
 BEGIN
   IF (OkANSI OR OkAvatar) THEN
-    Prompt('^4þ ')
+    Prompt('^4ï¿½ ')
   ELSE
     Prompt('* ');
   IF (InString[Length(InString)] = #29) THEN
@@ -4474,7 +4522,7 @@ END;
 PROCEDURE dophoneHangup(ShowIt: Boolean);
 VAR
   c: Char;
-  Try: Integer;
+  TryX: Integer;
   SaveTimer: LongInt;
 BEGIN
   IF (NOT LocalIOOnly) THEN
@@ -4486,8 +4534,8 @@ BEGIN
       GotoXY(32,17);
       Write('Hanging up phone...');
     END;
-    Try := 0;
-    WHILE (Try < 3) AND (NOT KeyPressed) DO
+    TryX := 0;
+    WHILE (TryX < 3) AND (NOT KeyPressed) DO
     BEGIN
       Com_Flush_Recv;
       Com_Send_Str(Liner.HangUp);
@@ -4498,7 +4546,7 @@ BEGIN
         IF (c > #0) AND (InWFCMenu) THEN
           WriteWFC(c);
       END;
-      Inc(Try);
+      Inc(TryX);
     END;
   END;
   IF (ShowIt) AND (SysOpOn) AND (NOT BlankMenuNow) THEN
@@ -4556,7 +4604,7 @@ BEGIN
 {$IFDEF MSDOS}
   NoSound;
 {$ENDIF}
-  IF (NOT AllowContinue) AND NOT (PrintingFile AND AllowAbort) THEN
+  IF (NOT AllowContinue) AND NOT (PrintingFile AND AllowAbortRG) THEN
     IsCont := FALSE;
   IF (IsCont) THEN
     { Prompt(FString.Continue) }
@@ -4564,7 +4612,7 @@ BEGIN
   ELSE
     BEGIN
       IF NOT (PauseIsNull) THEN
-      { Prompt({FString.lPause); }
+      { Prompt(FString.lPause); }
       lRGLngStr(5,FALSE);
     END;
   LIL := 1;
@@ -4575,7 +4623,7 @@ BEGIN
       CASE Cmd OF
         'C' : IF (IsCont) THEN
                 TempPause := FALSE;
-        'N' : Abort := TRUE;
+        'N' : AbortRG := TRUE;
       END;
     UNTIL (Cmd IN ['Y','N','Q','C',^M]) OR (HangUp);
   END
@@ -4587,7 +4635,7 @@ BEGIN
   ELSE
     FOR Counter := 1 TO LennMCI(lRGLNGStr(5,TRUE){FString.lPause}) DO
       BackSpace;
-  IF (Abort) THEN
+  IF (AbortRG) THEN
     NL;
   IF (NOT HangUp) THEN
     SetC(SaveCurCo);
@@ -4690,7 +4738,7 @@ BEGIN
                 IF (S[Index + 2] = 'P') THEN
                 BEGIN
                   Add := ThisUser.CallerID;
-                  Inc(Index,1);
+                  {Inc(Index,1);}
                 END
                 ELSE
                 BEGIN
@@ -4722,7 +4770,7 @@ BEGIN
         Add := '%' + S[Index + 1];
       END;
       Temp := Temp + Add;
-      Inc(Index);
+      {Inc(Index);}
     END
     ELSE
       Temp := Temp + S[Index];
@@ -4753,7 +4801,7 @@ BEGIN
                   'D' : Add := Street;
                   'O' : BEGIN
                           IF (PrintingFile) OR (Reading_A_Msg) THEN
-                            AllowAbort := FALSE;
+                            AllowAbortRG := FALSE;
                           Add := '';
                         END;
                 END;
@@ -5036,7 +5084,7 @@ BEGIN
                 END;
         END;
       Temp := Temp + Add;
-      Inc(Index,2);
+      {Inc(Index,2);}
     END
   ELSE
     Temp := Temp + S[Index];

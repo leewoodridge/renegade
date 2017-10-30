@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
@@ -19,6 +16,9 @@ PROCEDURE ShowThisMenu;
 
 IMPLEMENTATION
 
+Uses
+  SysUtils;
+  
 PROCEDURE LoadMenu;
 VAR
   Counter,
@@ -185,9 +185,9 @@ BEGIN
     Print('*** No commands on this menu ***')
   ELSE
   BEGIN
-    AllowAbort := TRUE;
+    AllowAbortRG := TRUE;
     MCIAllowed := FALSE;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     CLS;
     NL;
@@ -196,7 +196,7 @@ BEGIN
               PrintACR('^0###^4:^3KK            ^4:^3CF^4:^3ACS       ^4:^3CK^4:^3Options');
               PrintACR('^4===:==============:==:==========:==:========================================');
               CmdToList := 1;
-              WHILE (CmdToList <= NumCmds) AND (NOT Abort) AND (NOT HangUp) DO
+              WHILE (CmdToList <= NumCmds) AND (NOT AbortRG) AND (NOT HangUp) DO
               BEGIN
                 PrintACR('^0'+PadRightInt(CmdToList,3)+
                          ' ^3'+PadLeftStr(MemCmd^[CmdToList].CKeys,14)+
@@ -229,10 +229,10 @@ BEGIN
                   IF ((CmdToList + (Counter * NumRows)) <= NumCmds) THEN
                     TempStr := TempStr + ' '+Type1(CmdToList + (Counter * NumRows));
                 PrintACR('^1'+TempStr);
-              UNTIL ((CmdToList >= NumRows) OR (Abort) OR (HangUp));
+              UNTIL ((CmdToList >= NumRows) OR (AbortRG) OR (HangUp));
             END;
     END;
-    AllowAbort := FALSE;
+    AllowAbortRG := FALSE;
     MCIAllowed := TRUE;
   END;
 END;
@@ -367,14 +367,14 @@ VAR
     Acc,
     CmdNotHid: Boolean;
   BEGIN
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     GetMaxRight(MaxRight);
     DoMenuTitles(MaxRight);
     IF (NoGlobalDisplayed IN MemMenu.MenuFlags) OR (NoGlobalUsed IN MemMenu.MenuFlags) THEN
       Dec(NumCmds,GlobalCmds);
     CmdToList := 0;
-    WHILE (CmdToList < NumCmds) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (CmdToList < NumCmds) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Inc(CmdToList);
       CmdNotHid := FALSE;
@@ -406,14 +406,14 @@ VAR
     TempStr1 := '';
     OnLin := 0;
     TempStr := '';
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     GetMaxRight(MaxRight);
     DoMenuTitles(MaxRight);
     IF (NoGlobalDisplayed IN MemMenu.MenuFlags) OR (NoGlobalUsed IN MemMenu.MenuFlags) THEN
       Dec(NumCmds,GlobalCmds);
     CmdToList := 0;
-    WHILE (CmdToList < NumCmds) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (CmdToList < NumCmds) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Inc(CmdToList);
       CmdNotHid := FALSE;

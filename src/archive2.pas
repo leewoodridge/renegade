@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
@@ -23,7 +20,8 @@ USES
   File1,
   File9,
   File11,
-  TimeFunc;
+  TimeFunc,
+  SysUtils;
 
 CONST
   MaxDOSChrLine = 127;
@@ -36,12 +34,12 @@ VAR
   FileListArray: ARRAY [1..MaxFiles] OF AStr;
   F: FileInfoRecordType;
   (*
-  DirInfo: SearchRec;
+  DirInfo: TRawByteSearchRec;
   *)
-  FileName,
-  S,
-  S1,
-  S2,
+  FileName: ShortString; //Str78
+  S : ShortString; // 70
+  S1 : AStr;
+  S2 : ShortString;
   OS1: AStr;
   DS: DirStr;
   NS: NameStr;
@@ -51,8 +49,8 @@ VAR
   NumExtDesc,
   NumFiles,
   RecNum,
-  Counter: Byte;
-  Junk: SmallInt;
+  Counter,
+  Junk: Byte;
   RN,
   FArea,
   SaveFileArea,
@@ -69,7 +67,7 @@ VAR
 
   PROCEDURE AddFL(F1: FileInfoRecordType; FN1: AStr; VAR NumFiles1: Byte; b: Boolean);
   VAR
-    DirInfo1: SearchRec;
+    DirInfo1: TRawByteSearchRec;
     DS1: DirStr;
     NS1: NameStr;
     ES1: ExtStr;
@@ -128,7 +126,7 @@ VAR
       RecNo(F1,FN1,RN1);
       IF (BadDownloadPath) THEN
         Exit;
-      WHILE (RN1 <> -1) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (RN1 <> -1) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
         Seek(FileInfoFile,RN1);
         Read(FileInfoFile,F1);
@@ -180,7 +178,7 @@ VAR
       RecNo(F1,FN1,RN1);
       IF (BadDownloadPath) THEN
         Exit;
-      WHILE (RN1 <> -1) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (RN1 <> -1) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
         Seek(FileInfoFile,RN1);
         Read(FileInfoFile,F1);
@@ -234,7 +232,7 @@ VAR
       RecNo(F1,FN1,RN1);
       IF (BadDownloadPath) THEN
         Exit;
-      WHILE (RN1 <> -1) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (RN1 <> -1) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
         Seek(FileInfoFile,RN1);
         Read(FileInfoFile,F1);
@@ -340,6 +338,9 @@ VAR
   END;
 
 BEGIN
+  SetLength(FileName, 78);
+  SetLength(S, 70);
+  SetLength(S2, 12);
   TempPause := FALSE;
   SaveFileArea := FileArea;
   InitFileArea(FileArea);
@@ -361,7 +362,7 @@ BEGIN
             IF (FileName = '') THEN
             BEGIN
               NL;
-              Print('Aborted!');
+              Print('AbortRGed!');
             END
             ELSE
             BEGIN
@@ -480,7 +481,7 @@ BEGIN
                                     IF (S2 = '') THEN
                                     BEGIN
                                       NL;
-                                      Print('Aborted!');
+                                      Print('AbortRGed!');
                                     END
                                     ELSE
                                     BEGIN
@@ -555,7 +556,7 @@ BEGIN
                             Print('No files in list!')
                           ELSE
                           BEGIN
-                            Abort := FALSE;
+                            AbortRG := FALSE;
                             Next := FALSE;
                             S := '';
                             Counter := 0;
@@ -576,8 +577,8 @@ BEGIN
                                 S := '';
                                 Counter := 0;
                               END;
-                            UNTIL (RecNum = NumFiles) OR (Abort) OR (HangUp);
-                            IF (Counter in [1..4]) AND (NOT Abort) THEN
+                            UNTIL (RecNum = NumFiles) OR (AbortRG) OR (HangUp);
+                            IF (Counter in [1..4]) AND (NOT AbortRG) THEN
                               PrintACR(S);
                           END;
                     'R' : IF (NumFiles = 0) THEN
@@ -590,7 +591,7 @@ BEGIN
                             IF (S = '') THEN
                             BEGIN
                               NL;
-                              Print('Aborted!');
+                              Print('AbortRGed!');
                             END
                             ELSE
                             BEGIN
@@ -628,7 +629,7 @@ BEGIN
             IF (FileName = '') THEN
             BEGIN
               NL;
-              Print('Aborted!');
+              Print('AbortRGed!');
             END
             ELSE
             BEGIN
@@ -656,14 +657,14 @@ BEGIN
                 C_Files := 0;
                 C_OldSiz := 0;
                 C_NewSiz := 0;
-                Abort := FALSE;
+                AbortRG := FALSE;
                 Next := FALSE;
                 SysOpLog('Conversion process initiated at '+DateStr+' '+TimeStr+'.');
                 IF (IsUL(FileName)) THEN
                 BEGIN
                   FSplit(FileName,DS,NS,ES);
                   FindFirst(FileName,AnyFile - Directory - VolumeID - Dos.Hidden - SysFile,DirInfo);
-                  WHILE (DOSError = 0) AND (NOT Abort) AND (NOT HangUp) DO
+                  WHILE (DOSError = 0) AND (NOT AbortRG) AND (NOT HangUp) DO
                   BEGIN
                     FileName := FExpand(SQOutSP(DS+DirInfo.Name));
                     AType := ArcType(FileName);
@@ -741,7 +742,7 @@ BEGIN
                   ELSE
                   BEGIN
                     FArea := 1;
-                    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
+                    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
                     BEGIN
                       CvtFiles(F,FArea,FileName,BB,C_Files,C_OldSiz,C_NewSiz);
                       WKey;
@@ -787,11 +788,11 @@ BEGIN
             IF (FileName = '') THEN
             BEGIN
               NL;
-              Print('Aborted!');
+              Print('AbortRGed!');
             END
             ELSE
             BEGIN
-              Abort := FALSE;
+              AbortRG := FALSE;
               Next := FALSE;
               IF (IsUL(FileName)) THEN
               BEGIN
@@ -812,7 +813,7 @@ BEGIN
                 BEGIN
                   FSplit(FileName,DS,NS,ES);
                   FindFirst(FileName,AnyFile - Directory - VolumeID - Dos.Hidden - SysFile,DirInfo);
-                  WHILE (DOSError = 0) AND (NOT Abort) AND (NOT HangUp) DO
+                  WHILE (DOSError = 0) AND (NOT AbortRG) AND (NOT HangUp) DO
                   BEGIN
                     FileName := FExpand(SQOutSP(DS+DirInfo.Name));
                     AType := ArcType(FileName);
@@ -835,7 +836,7 @@ BEGIN
                 ELSE
                 BEGIN
                   FArea := 1;
-                  WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
+                  WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
                   BEGIN
                     CmtFiles(F,FArea,FileName);
                     WKey;
@@ -857,20 +858,20 @@ BEGIN
             IF (FileName = '') THEN
             BEGIN
               NL;
-              Print('Aborted!');
+              Print('AbortRGed!');
             END
             ELSE
             BEGIN
               NL;
               DelBad := PYNQ('Delete files that don''t pass the test? ',0,FALSE);
               NL;
-              Abort := FALSE;
+              AbortRG := FALSE;
               Next := FALSE;
               IF (IsUL(FileName)) THEN
               BEGIN
                 FSplit(FileName,DS,NS,ES);
                 FindFirst(FileName,AnyFile - Directory - VolumeID - DOS.Hidden - SysFile,DirInfo);
-                WHILE (DOSError = 0) AND (NOT Abort) AND (NOT HangUp) DO
+                WHILE (DOSError = 0) AND (NOT AbortRG) AND (NOT HangUp) DO
                 BEGIN
                   FileName := FExpand(SQOutSP(DS+DirInfo.Name));
                   AType := ArcType(FileName);
@@ -900,7 +901,7 @@ BEGIN
                 ELSE
                 BEGIN
                   FArea := 1;
-                  WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
+                  WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
                   BEGIN
                     TestFiles(F,FArea,FileName,DelBad);
                     WKey;
@@ -916,4 +917,4 @@ BEGIN
   LastError := IOResult;
 END;
 
-END.
+END.

@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 {$MODE TP}
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
 
@@ -390,4 +387,4 @@ BEGIN
 END;
 
 
-END.
+END.

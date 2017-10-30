@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 {$MODE TP}
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
@@ -40,8 +37,8 @@ PROCEDURE Anonymous(Offline: Boolean; VAR MHeader: MHeaderRec);
 VAR
   An: Anontyp;
   HeaderL: AStr;
-  UName,
-  Junk: Str36;
+  UName: ShortString;
+  Junk: AnsiString;
   Cmd: Char;
   Counter: Byte;
 BEGIN
@@ -59,7 +56,7 @@ BEGIN
     An := ATNo;
   IF (Offline) THEN
   BEGIN
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     IF (An = ATNo) THEN
       FOR Counter := 1 TO 5 DO
@@ -165,13 +162,13 @@ BEGIN
   S := '';
   IF (LastLineStr <> '') THEN
   BEGIN
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
-    AllowAbort := FALSE;
+    AllowAbortRG := FALSE;
     Reading_A_Msg := TRUE;
     PrintMain(LastLineStr);
     Reading_A_Msg := FALSE;
-    AllowAbort := TRUE;
+    AllowAbortRG := TRUE;
     S := LastLineStr;
     LastLineStr := '';
     IF (Pos(^[,S) > 0) THEN
@@ -367,14 +364,14 @@ VAR
   CCol: Integer;
 
   DisableMCI,
-  CantAbort,
+  CantAbortRG,
   Insert_Mode,
   SaveMsg: Boolean;
 
   PROCEDURE DoLines;
   BEGIN
     IF (OkANSI OR OkAvatar) THEN
-      Print('^4旼컴:컴컴:컴컴:컴컴:컴컴:컴컴:컴컴:컴컴쩡컴�:컴컴:컴컴:컴컴:컴컴:컴컴:컴컴:컴커^1')
+      Print('^4旼컴:컴컴:컴컴:컴컴:컴컴:컴컴:컴컴:컴컴쩡컴?컴컴:컴컴:컴컴:컴컴:컴컴:컴컴:컴커^1')
     ELSE
       Print('[---:----:----:----:----:----:----:----|----:----:----:----:----:----:----:---]');
   END;
@@ -523,11 +520,11 @@ VAR
           Reposition (TRUE);
           MCIAllowed := FALSE;
           ColorAllowed := FALSE;
-          AllowAbort := FALSE;
+          AllowAbortRG := FALSE;
           PrintMain(Copy(LinePtr^[CurrentLine],1,MaxLineLen));
           MCIAllowed := TRUE;
           ColorAllowed := TRUE;
-          AllowAbort := TRUE;
+          AllowAbortRG := TRUE;
           IF (CurLength < Length(PhyLine[Phline])) THEN
             Clear_Eol;
           Set_PhyLine;
@@ -896,11 +893,11 @@ VAR
       {update display line following cursor}
       MCIAllowed := FALSE;
       ColorAllowed := FALSE;
-      AllowAbort := FALSE;
+      AllowAbortRG := FALSE;
       PrintMain(Copy(LinePtr^[CurrentLine],CCol,MaxLineLen));
       MCIAllowed := TRUE;
       ColorAllowed := TRUE;
-      AllowAbort := TRUE;
+      AllowAbortRG := TRUE;
       {position cursor FOR Next insertion}
       Inc(CCol);
       Reposition(TRUE);
@@ -926,11 +923,11 @@ VAR
       Delete(LinePtr^[CurrentLine],CCol,1);
       MCIAllowed := FALSE;
       ColorAllowed := FALSE;
-      AllowAbort := FALSE;
+      AllowAbortRG := FALSE;
       PrintMain(Copy(LinePtr^[CurrentLine],CCol,MaxLineLen)+' ');
       MCIAllowed := TRUE;
       ColorAllowed := TRUE;
-      AllowAbort := TRUE;
+      AllowAbortRG := TRUE;
       Reposition(TRUE);
       Set_PhyLine;
     END;
@@ -1071,7 +1068,7 @@ VAR
     Done := FALSE;
 
     REPEAT
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
       CLS;
       QuoteLi := 0;
@@ -1326,7 +1323,7 @@ VAR
     DoLines;
   END;
 
-  PROCEDURE InputTheMessage(CantAbort1: Boolean; VAR DisableMCI1,SaveMsg1: Boolean);
+  PROCEDURE InputTheMessage(CantAbortRG1: Boolean; VAR DisableMCI1,SaveMsg1: Boolean);
   VAR
     LineStr,
     TempStr1,
@@ -1343,7 +1340,7 @@ VAR
     ShowCont,
     ExitMsg,
     SaveLine,
-    AbortMsg: Boolean;
+    AbortRGMsg: Boolean;
 
     PROCEDURE EditMsgTo(VAR MsgTo1: Str36);
     VAR
@@ -1392,11 +1389,11 @@ VAR
         Print(PadLeftStr('^4To: ^6'+Caps(MsgTo1),40));
     END;
 
-    PROCEDURE EditMsgSubj(VAR MsgSubj1: Str40; CantAbort2: Boolean);
+    PROCEDURE EditMsgSubj(VAR MsgSubj1: Str40; CantAbortRG2: Boolean);
     VAR
       TempMsgSubj: Str40;
     BEGIN
-      IF (MHeader.FileAttached = 0) AND (NOT CantAbort2) THEN
+      IF (MHeader.FileAttached = 0) AND (NOT CantAbortRG2) THEN
       BEGIN
         Prt('Subject: ');
         IF (MsgSubj1 <> '') THEN
@@ -1424,7 +1421,7 @@ VAR
     VAR
       FileName: Str40;
       DOk,
-      KAbort,
+      KAbortRG,
       AddBatch: Boolean;
       TransferTime: LongInt;
     BEGIN
@@ -1451,7 +1448,7 @@ VAR
         BEGIN
           IF (NOT Exist(FileName)) AND (InCom) THEN
           BEGIN
-            Receive(FileName,TempDir+'\UP',FALSE,DOk,KAbort,AddBatch,TransferTime);
+            Receive(FileName,TempDir+'\UP',FALSE,DOk,KAbortRG,AddBatch,TransferTime);
             MHeader.FileAttached := 1;
           END
           ELSE IF Exist(FileName) THEN
@@ -1484,10 +1481,10 @@ VAR
       MCIAllowed := FALSE;
       AllowContinue := TRUE;
       DOSANSIOn := FALSE;
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
       NL;
-      WHILE ((LineNum1 <= (TotalLines - 1)) AND (NOT Abort) AND (NOT HangUp)) DO
+      WHILE ((LineNum1 <= (TotalLines - 1)) AND (NOT AbortRG) AND (NOT HangUp)) DO
       BEGIN
         IF (DisplayLineNum) THEN
           Print('^3'+IntToStr(LineNum1)+':');
@@ -1517,7 +1514,7 @@ VAR
     VAR
       TempStr1: AStr;
       DOk,
-      KAbort,
+      KAbortRG,
       AddBatch: Boolean;
       TransferTime: LongInt;
     BEGIN
@@ -1537,7 +1534,7 @@ VAR
       END;
       IF (NOT Exist(TempStr1)) AND (InCom) THEN
       BEGIN
-        Receive(TempStr1,TempDir+'UP\',FALSE,DOk,KAbort,AddBatch,TransferTime);
+        Receive(TempStr1,TempDir+'UP\',FALSE,DOk,KAbortRG,AddBatch,TransferTime);
         TempStr1 := TempDir+'UP\'+TempStr1;
       END;
       IF ((TempStr1 <> '') AND (NOT HangUp)) THEN
@@ -1552,9 +1549,9 @@ VAR
 
   BEGIN
     FillChar(LinePtr^,(MaxLines * 121),0);
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
-    AbortMsg := FALSE;
+    AbortRGMsg := FALSE;
     SaveMsg1 := FALSE;
     DisableMCI1 := FALSE;
     TotalLines := 1;
@@ -1582,16 +1579,16 @@ VAR
       BEGIN
         EditMsgTo(MsgTo);
         NL;
-        EditMsgSubj(MsgSubj,CantAbort1);
+        EditMsgSubj(MsgSubj,CantAbortRG1);
       END;
     END;
 
     IF (MsgSubj = '') THEN
-      IF (NOT CantAbort1) THEN
+      IF (NOT CantAbortRG1) THEN
       BEGIN
         SaveMsg1 := FALSE;
         NL;
-        Print('Aborted!');
+        Print('AbortRGed!');
         Exit;
       END;
 
@@ -1606,17 +1603,17 @@ VAR
           OneK(Cmd,^M'ACFMQSTU?',TRUE,TRUE);
           NL;
           CASE Cmd OF
-            'A' : IF (CantAbort1) THEN
+            'A' : IF (CantAbortRG1) THEN
                   BEGIN
-                    Print('^7You can not abort this message!^1');
+                    Print('^7You can not AbortRG this message!^1');
                     ExitMsg := FALSE;
                   END
-                  ELSE IF PYNQ('Abort message? ',0,FALSE) THEN
+                  ELSE IF PYNQ('AbortRG message? ',0,FALSE) THEN
                   BEGIN
-                    AbortMsg := TRUE;
+                    AbortRGMsg := TRUE;
                     SaveMsg1 := FALSE;
                     NL;
-                    Print('Aborted!');
+                    Print('AbortRGed!');
                   END;
             'C' : IF (TotalLines = 0) THEN
                   BEGIN
@@ -1631,7 +1628,7 @@ VAR
                     Print('^7You do not have access to this command!^1');
                     ExitMsg := FALSE;
                   END
-                  ELSE IF (CantAbort1) THEN
+                  ELSE IF (CantAbortRG1) THEN
                   BEGIN
                     Print('^7You can not attach a file to this message!^1');
                     ExitMsg := FALSE;
@@ -1652,13 +1649,13 @@ VAR
                         MHeader.FileAttached := 0;
                         MsgSubj := '';
                         NL;
-                        EditMsgSubj(MsgSubj,CantAbort1);
+                        EditMsgSubj(MsgSubj,CantAbortRG1);
                         IF (MsgSubj = '') THEN
                         BEGIN
                           MsgSubj := SaveMsgSubj;
                           MHeader.FileAttached := SaveFileAttached;
                           NL;
-                          Print('Aborted!');
+                          Print('AbortRGed!');
                         END;
                       END;
                     END;
@@ -1703,7 +1700,7 @@ VAR
                       ELSE
                         Counter := 1;
                     END;
-                    IF (CantAbort1) AND (TotalLines = 0) THEN
+                    IF (CantAbortRG1) AND (TotalLines = 0) THEN
                     BEGIN
                       Print('^7You must complete this message!^1');
                       ExitMsg := FALSE;
@@ -1716,11 +1713,11 @@ VAR
                     ELSE
                     BEGIN
                       SaveMsg1 := TRUE;
-                      AbortMsg := FALSE;
+                      AbortRGMsg := FALSE;
                       Inc(TotalLines);
                     END;
                   END;
-            'T' : IF (CantAbort1) THEN
+            'T' : IF (CantAbortRG1) THEN
                   BEGIN
                     Print('^7The receiver and subject can not be changed!^1');
                     ExitMsg := FALSE;
@@ -1741,7 +1738,7 @@ VAR
                       ExitMsg := FALSE;
                     END
                     ELSE
-                      EditMsgSubj(MsgSubj,CantAbort1);
+                      EditMsgSubj(MsgSubj,CantAbortRG1);
                   END;
             'U' : IF ((TotalLines + 1) = MaxLines) THEN
                   BEGIN
@@ -1756,8 +1753,8 @@ VAR
                     ExitMsg := FALSE;
                   END;
           END;
-        UNTIL (AbortMsg) OR (ExitMsg) OR (SaveMsg1) OR (HangUp);
-      UNTIL ((AbortMsg) OR (SaveMsg1) OR (HangUp));
+        UNTIL (AbortRGMsg) OR (ExitMsg) OR (SaveMsg1) OR (HangUp);
+      UNTIL ((AbortRGMsg) OR (SaveMsg1) OR (HangUp));
     END
     ELSE
     BEGIN
@@ -1791,15 +1788,15 @@ VAR
             IF (Cmd <> ^M) THEN
               NL;
             CASE Cmd OF
-              'A' : IF (CantAbort1) THEN
-                      Print('^7You can not abort this message!^1')
-                    ELSE IF PYNQ('Abort message? ',0,FALSE) THEN
+              'A' : IF (CantAbortRG1) THEN
+                      Print('^7You can not AbortRG this message!^1')
+                    ELSE IF PYNQ('AbortRG message? ',0,FALSE) THEN
                     BEGIN
-                      AbortMsg := TRUE;
+                      AbortRGMsg := TRUE;
                       SaveMsg1 := FALSE;
                       ShowCont := FALSE;
                       NL;
-                      Print('Aborted!');
+                      Print('AbortRGed!');
                     END;
               'C' : IF ((TotalLines - 1) < 1) THEN
                       Print('^7Nothing to clear!^1')
@@ -1824,7 +1821,7 @@ VAR
                       InputIntegerWOC('Delete which line',LineNum1,[NumbersOnly],1,(TotalLines - 1));
                       IF (LineNum1 >= 1) AND (LineNum1 <= (TotalLines - 1)) THEN
                       BEGIN
-                        Abort := FALSE;
+                        AbortRG := FALSE;
                         Next := FALSE;
                         NL;
                         Print('^3Line '+IntToStr(LineNum1)+':');
@@ -1846,7 +1843,7 @@ VAR
                     END;
               'F' : IF (NOT AACS(General.FileAttachACS)) THEN
                       Print('^7You do not have access to this command!^1')
-                    ELSE IF (CantAbort1) THEN
+                    ELSE IF (CantAbortRG1) THEN
                       Print('^7You can not attach a file to this message!^1')
                     ELSE IF (MHeader.FileAttached > 0) THEN
                     BEGIN
@@ -1867,13 +1864,13 @@ VAR
                           MHeader.FileAttached := 0;
                           MsgSubj := '';
                           NL;
-                          EditMsgSubj(MsgSubj,CantAbort1);
+                          EditMsgSubj(MsgSubj,CantAbortRG1);
                           IF (MsgSubj = '') THEN
                           BEGIN
                             MsgSubj := SaveMsgSubj;
                             MHeader.FileAttached := SaveFileAttached;
                             NL;
-                            Print('Aborted!');
+                            Print('AbortRGed!');
                           END;
                         END;
                       END;
@@ -1946,7 +1943,7 @@ VAR
                       IF (LineNum1 >= 1) AND (LineNum1 <= (TotalLines - 1)) THEN
                       BEGIN
                         TempStr3 := LinePtr^[LineNum1];
-                        Abort := FALSE;
+                        AbortRG := FALSE;
                         Next := FALSE;
                         NL;
                         Print('^3Old line '+IntToStr(LineNum1)+':');
@@ -2049,18 +2046,18 @@ VAR
                         ELSE
                           Counter := 1;
                       END;
-                      IF (CantAbort1) AND ((TotalLines - 1) < 1) THEN
+                      IF (CantAbortRG1) AND ((TotalLines - 1) < 1) THEN
                         Print('^7You must complete this message!^1')
                       ELSE IF ((TotalLines - 1) < 1) THEN
                         Print('^7Nothing to save!^1')
                       ELSE
                       BEGIN
                         SaveMsg1 := TRUE;
-                        AbortMsg := FALSE;
+                        AbortRGMsg := FALSE;
                         ShowCont := FALSE;
                       END;
                     END;
-              'T' : IF (CantAbort1) THEN
+              'T' : IF (CantAbortRG1) THEN
                       Print('^7The receiver and subject can not be changed!^1')
                     ELSE
                     BEGIN
@@ -2072,7 +2069,7 @@ VAR
                       IF (MHeader.FileAttached > 0) THEN
                         Print('^7The subject of this message can not be changed!')
                       ELSE
-                        EditMsgSubj(MsgSubj,CantAbort1);
+                        EditMsgSubj(MsgSubj,CantAbortRG1);
                     END;
               'U' : IF ((TotalLines - 1) >= MaxLines) THEN
                       Print('^7You have reached the maximum line limit!^1')
@@ -2086,7 +2083,7 @@ VAR
                       InputIntegerWOC('Line number to replace',LineNum1,[NumbersOnly],1,(TotalLines - 1));
                       IF ((LineNum1 >= 1) AND (LineNum1 <= (TotalLines - 1))) THEN
                       BEGIN
-                        Abort := FALSE;
+                        AbortRG := FALSE;
                         Next := FALSE;
                         NL;
                         Print('^3Old line '+IntToStr(LineNum1)+':');
@@ -2156,8 +2153,8 @@ VAR
               LineStr := '/';
             END;
           END;
-        UNTIL (AbortMsg) OR (ExitMsg) OR (SaveMsg1) OR (HangUp);
-      UNTIL ((AbortMsg) OR (SaveMsg1) OR (HangUp));
+        UNTIL (AbortRGMsg) OR (ExitMsg) OR (SaveMsg1) OR (HangUp);
+      UNTIL ((AbortRGMsg) OR (SaveMsg1) OR (HangUp));
     END;
   END;
 
@@ -2375,12 +2372,12 @@ BEGIN
     MsgSubj := MsgTitle;
 
   IF (MsgSubj[1] <> '\') THEN
-    CantAbort := FALSE
+    CantAbortRG := FALSE
   ELSE
   BEGIN
     MsgSubj := Copy(MsgSubj,2,(Length(MsgSubj) - 1));
     MHeader.Subject := MsgSubj;
-    CantAbort := TRUE;
+    CantAbortRG := TRUE;
   END;
 
   IF (MsgSubj[1] = #1) THEN
@@ -2394,7 +2391,7 @@ BEGIN
 
   MHeader.FileAttached := 0;
 
-  InputTheMessage(CantAbort,DisableMCI,SaveMsg);
+  InputTheMessage(CantAbortRG,DisableMCI,SaveMsg);
 
   IF (SaveMsg) THEN
     SaveIt(DisableMCI);
@@ -2406,4 +2403,4 @@ BEGIN
   FreeMem(LinePtr,(MaxLines * 120));
 END;
 
-END.
+END.

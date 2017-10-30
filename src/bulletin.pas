@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 {$MODE TP}
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
 UNIT Bulletin;
@@ -71,9 +68,7 @@ END;
 
 FUNCTION FindOnlyOnce: Boolean;
 VAR
-  (*
-  DirInfo: SearchRec;
-  *)
+  DirInfo: {TRawByte}SearchRec;
   DT: DateTime;
 BEGIN
   FindOnlyOnce := FALSE;
@@ -92,9 +87,7 @@ TYPE
 VAR
   BulletinArray: ^BulletinType;
   DT: DateTime;
-  (*
-  DirInfo: SearchRec;
-  *)
+  DirInfo: {TRawByte}SearchRec;
   BullCount,
   Biggest,
   LenOfBullPrefix,
@@ -334,7 +327,7 @@ BEGIN
   UNTIL (Cmd IN ['L','Q',^M]) OR (HangUp);
   IF (Cmd IN ['L',^M]) THEN
   BEGIN
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     AllowContinue := TRUE;
     IF (Pos(';',MenuOption) > 0) THEN
@@ -349,7 +342,7 @@ BEGIN
     PrintF(FN+'H');
     Reset(UserFile);
     RecNum := 1;
-    WHILE (RecNum <= (FileSize(UserFile) - 1)) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (RecNum <= (FileSize(UserFile) - 1)) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       LoadURec(User,RecNum);
       UCity := (Copy(User.CityState,1,(Pos(',',User.CityState) - 1)));
@@ -366,7 +359,7 @@ BEGIN
       Inc(RecNum);
     END;
     Close(UserFile);
-    IF (NOT Abort) AND (NOT HangUp) THEN
+    IF (NOT AbortRG) AND (NOT HangUp) THEN
       PrintF(FN+'T');
     AllowContinue := FALSE;
   END;
@@ -453,7 +446,7 @@ VAR
   LastCaller: LastCallerRec;
   RecNum: Integer;
 BEGIN
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   AllowContinue := TRUE;
   IF (MenuOptions = '') THEN
@@ -469,7 +462,7 @@ BEGIN
     RecNum := (FileSize(LastCallerFile) - x);
   PrintF(MenuOptions+'H');
   Seek(LastCallerFile,RecNum);
-  WHILE (NOT EOF(LastCallerFile)) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (NOT EOF(LastCallerFile)) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     Read(LastCallerFile,LastCaller);
     IF (((LastCaller.LogonTime DIV 86400) <> (GetPackDateTime DIV 86400)) AND (x > 0)) OR
@@ -477,7 +470,7 @@ BEGIN
       DisplayBuffer(TodaysCallerMCI,@LastCaller,Junk);
   END;
   Close(LastCallerFile);
-  IF (NOT Abort) THEN
+  IF (NOT AbortRG) THEN
     PrintF(MenuOptions+'T');
   AllowContinue := FALSE;
   SysOpLog('Viewed Todays Callers.');
@@ -518,7 +511,7 @@ BEGIN
   ELSE
   BEGIN
     NL;
-    Print('|03[컴컴컴컴컴컴컴컴컴컴컴�[ |11And Now |03... |11A Quote For You! |03]컴컴컴컴컴컴컴컴컴컴컴]');
+    Print('|03[컴컴컴컴컴컴컴컴컴컴컴? |11And Now |03... |11A Quote For You! |03]컴컴컴컴컴컴컴컴컴컴컴]');
     NL;
   END;
   TotLoad := 0;
@@ -544,7 +537,7 @@ BEGIN
   ELSE
   BEGIN
     NL;
-    Print('|03[컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴�]');
+    Print('|03[컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴?');
     NL;
   END;
   IF (NOT General.UserAddQuote) THEN
@@ -589,4 +582,4 @@ BEGIN
   END;
 END;
 
-END.
+END.

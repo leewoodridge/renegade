@@ -25,7 +25,7 @@ VAR
 
 FUNCTION Exist(FN: STRING): Boolean;
 VAR
-  DirInfo: SearchRec;
+  DirInfo: TRawByteSearchRec;
 BEGIN
   FindFirst(FN,AnyFile,DirInfo);
   Exist := (DosError = 0);

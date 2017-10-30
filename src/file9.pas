@@ -1,9 +1,16 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-{$MODE objfpc}
+{                                                         }
+{    _______                                  __          }
+{   |   _   .-----.-----.-----.-----.---.-.--|  .-----.   }
+{   |.  l   |  -__|     |  -__|  _  |  _  |  _  |  -__|   }
+{   |.  _   |_____|__|__|_____|___  |___._|_____|_____|   }
+{   |:  |   |                 |_____|                     }
+{   |::.|:. |                                             }
+{   `--- ---'                                             }
+{                                                         }
+
+
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
-{$H-}
+{$H+}
 
 UNIT File9;
 
@@ -14,7 +21,7 @@ USES
 
 PROCEDURE DosDir(CurDir: ASTR; CONST FSpec: Str12; Expanded: Boolean);
 PROCEDURE DirF(Expanded: Boolean);
-PROCEDURE DeleteFF(F: FileInfoRecordType; RN: Integer);
+PROCEDURE DeleteFF(F: FileInfoRecordType; RN: SizeInt);
 PROCEDURE ToggleFileAreaScanFlags;
 PROCEDURE SetFileAreaNewScanDate;
 
@@ -25,12 +32,13 @@ USES
   Common5,
   File0,
   File1,
-  TimeFunc;
+  TimeFunc,
+  SysUtils;
 
 PROCEDURE DosDir(CurDir: ASTR; CONST FSpec: Str12; Expanded: Boolean);
 VAR
   (*
-  DirInfo: SearchRec;
+  DirInfo: TRawByteSearchRec;
   *)
   DT: DateTime;
   TempStr: ASTR;
@@ -41,7 +49,7 @@ VAR
   BytesUsed: LongInt;
 BEGIN
   CurDir := BSlash(CurDir,TRUE);
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   FindFirst(CurDir[1]+':\*.*',VolumeID,DirInfo);
   IF (DOSError <> 0) THEN
@@ -62,7 +70,7 @@ BEGIN
   BytesUsed := 0;
   CurDir := CurDir + FSpec;
   FindFirst(CurDir,AnyFile,DirInfo);
-  WHILE (DOSError = 0) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (DOSError = 0) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     IF (NOT (DirInfo.Attr AND Directory = Directory)) OR (FileSysOp) THEN
       IF (NOT (DirInfo.Attr AND VolumeID = VolumeID)) THEN
@@ -150,7 +158,7 @@ BEGIN
   DosDir(MemFileArea.DLPath,FSpec,Expanded);
 END;
 
-PROCEDURE DeleteFF(F: FileInfoRecordType; RN: Integer);
+PROCEDURE DeleteFF(F: FileInfoRecordType; RN: SizeInt);
 VAR
   ExtFile1: FILE;
   S,
@@ -226,7 +234,7 @@ VAR
   SaveFArea,
   SaveFileArea: Integer;
   FArea,
-  NumFAreas: SmallInt;
+  NumFAreas: SizeInt;
   SaveConfSystem,
   SaveTempPause: Boolean;
 
@@ -380,7 +388,7 @@ END;
 (* Done - Lee Palmer 06/18/06 *)
 PROCEDURE SetFileAreaNewScanDate;
 VAR
-  TempDate: Str10;
+  TempDate: ShortString;
   Key: CHAR;
 BEGIN
   {

@@ -1,708 +1,906 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
+{*******************************************************}
+{                                                       }
+{   Renegade BBS                                        }
+{                                                       }
+{   Copyright (c) 1990-2013 The Renegade Dev Team       }
+{   Copyleft  (ↄ) 2016 Renegade BBS                     }
+{                                                       }
+{   This file is part of Renegade BBS                   }
+{                                                       }
+{   Renegade is free software: you can redistribute it  }
+{   and/or modify it under the terms of the GNU General }
+{   Public License as published by the Free Software    }
+{   Foundation, either version 3 of the License, or     }
+{   (at your option) any later version.                 }
+{                                                       }
+{   Renegade is distributed in the hope that it will be }
+{   useful, but WITHOUT ANY WARRANTY; without even the  }
+{   implied warranty of MERCHANTABILITY or FITNESS FOR  }
+{   A PARTICULAR PURPOSE.  See the GNU General Public   }
+{   License for more details.                           }
+{                                                       }
+{   You should have received a copy of the GNU General  }
+{   Public License along with Renegade.  If not, see    }
+{   <http://www.gnu.org/licenses/>.                     }
+{                                                       }
+{*******************************************************}
+{   _______                                  __         }
+{  |   _   .-----.-----.-----.-----.---.-.--|  .-----.  }
+{  |.  l   |  -__|     |  -__|  _  |  _  |  _  |  -__|  }
+{  |.  _   |_____|__|__|_____|___  |___._|_____|_____|  }
+{  |:  |   |                 |_____|                    }
+{  |::.|:. |                                            }
+{  `--- ---'                                            }
+{*******************************************************}
 
-{$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
+{$I Renegade.Common.Defines.inc}
 
-UNIT Archive1;
+Unit Archive1;
 
-INTERFACE
+Interface
 
-USES
-  Common;
+Uses
+Common;
 
-PROCEDURE ArcDeComp(VAR Ok: Boolean; AType: Byte; CONST FileName,FSpec: AStr);
-PROCEDURE ArcComp(VAR Ok: Boolean; AType: Byte; CONST FileName,FSpec: AStr);
-PROCEDURE ArcComment(VAR Ok: Boolean; AType: Byte; CommentNum: Byte; CONST FileName: AStr);
-PROCEDURE ArcIntegrityTest(VAR Ok: Boolean; AType: Byte; CONST FileName: AStr);
-PROCEDURE ConvA(VAR Ok: Boolean; OldAType,NewAType: Byte; CONST OldFN,NewFN: AStr);
-FUNCTION ArcType(FileName: AStr): Byte;
-PROCEDURE ListArcTypes;
-PROCEDURE InvArc;
-PROCEDURE ExtractToTemp;
-PROCEDURE UserArchive;
+Procedure ArcDeComp(Var Ok: Boolean; AType: Byte;
+                    Const FileName, FileSpec: AnsiString);
+Procedure ArcComp(Var Ok: Boolean; AType: Byte;
+                  Const FileName, FileSpec: AnsiString);
+Procedure ArcComment(Var Ok: Boolean; AType: Byte;
+                     CommentNumber: Byte; Const FileName: AnsiString);
+Procedure ArcIntegrityTest(Var Ok: Boolean; AType: Byte;
+                           Const FileName: AnsiString);
+Procedure ConvA(Var Ok: Boolean; OldArchiveType, NewArchiveType: Byte;
+                Const OldFileName, NewFileName: Ansistring);
+Function  ArcType(FileName: AnsiString): Byte;
+Procedure ListArcTypes;
+Procedure InvArc;
+Procedure ExtractToTemp;
+Procedure UserArchive;
 
-IMPLEMENTATION
+Implementation
 
-USES
-  Dos,
-  ArcView,
-  ExecBat,
-  File0,
-  File1,
-  File2,
-  File9,
-  TimeFunc;
+Uses
+Dos,
+ArcView,
+ExecBat,
+File0,
+File1,
+File2,
+File9,
+SysUtils,
+TimeFunc;
 
-PROCEDURE ArcDeComp(VAR Ok: Boolean; AType: Byte; CONST FileName,FSpec: AStr);
-VAR
-  ResultCode: SmallInt;
-BEGIN
-  PurgeDir(TempDir+'ARC\',FALSE);
-  ExecBatch(Ok,TempDir+'ARC\',General.ArcsPath+
-            FunctionalMCI(General.FileArcInfo[AType].UnArcLine,FileName,FSpec),
-            General.FileArcInfo[AType].SuccLevel,ResultCode,FALSE);
-  IF (NOT Ok) AND (Pos('.DIZ',FSpec) = 0) THEN
-    SysOpLog(FileName+': errors during de-compression');
-END;
+{ De-compresses an Archive }
+Procedure ArcDeComp(Var Ok: Boolean; AType: Byte; Const FileName, FileSpec:
+                    AnsiString);
 
-PROCEDURE ArcComp(VAR Ok: Boolean; AType: Byte; CONST FileName,FSpec: AStr);
-VAR
-  ResultCode: SmallInt;
-BEGIN
-  IF (General.FileArcInfo[AType].ArcLine = '') THEN
-    Ok := TRUE
-  ELSE
-    ExecBatch(Ok,TempDir+'ARC\',General.ArcsPath+
-              FunctionalMCI(General.FileArcInfo[AType].ArcLine,FileName,FSpec),
-              General.FileArcInfo[AType].SuccLevel,ResultCode,FALSE);
-  IF (NOT Ok) THEN
-    SysOpLog(FileName+': errors during compression');
-END;
+Var
+  ResultCode: Byte;
 
-PROCEDURE ArcComment(VAR Ok: Boolean; AType: Byte; CommentNum: Byte; CONST FileName: AStr);
-VAR
-  TempStr: AStr;
-  ResultCode: SmallInt;
+Begin
+  PurgeDir(TempDir+'arc\',FALSE);
+  ExecBatch(Ok, TempDir+'arc\', General.ArcsPath +
+            FunctionalMCI(General.FileArcInfo[AType].UnArcLine, FileName,
+            FileSpec),
+  General.FileArcInfo[AType].SuccLevel, ResultCode, False);
+  If (Not Ok) And (Pos('.diz', AnsiLowerCase(FileSpec)) = 0) Then
+    Begin
+      SysOpLog(FileName+': errors during de-compression');
+    End;
+End;
+
+{ Compresses an Archive }
+Procedure ArcComp(Var Ok: Boolean; AType: Byte; Const FileName, FileSpec:
+                  AnsiString);
+
+Var
+  ResultCode: Byte;
+
+Begin
+  If (General.FileArcInfo[AType].ArcLine = '') Then
+    Begin
+      Ok := True
+    End
+  Else
+    Begin
+      ExecBatch(Ok,TempDir+'arc\',General.ArcsPath+
+                FunctionalMCI(General.FileArcInfo[AType].ArcLine, FileName,
+                FileSpec),
+      General.FileArcInfo[AType].SuccLevel, ResultCode, False);
+      If (Not Ok) Then
+        Begin
+          SysOpLog(FileName+': errors during compression');
+        End;
+    End;
+End;
+
+{ Adds a comment to an archive }
+Procedure ArcComment(Var Ok: Boolean; AType: Byte; CommentNumber: Byte; Const
+                     FileName: AnsiString);
+
+Var
+  TempStr: AnsiString;
+  ResultCode: Byte;
   SaveSwapShell: Boolean;
-BEGIN
-  IF (CommentNum > 0) AND (General.FileArcComment[CommentNum] <> '') THEN
-  BEGIN
-    SaveSwapShell := General.SwapShell;
-    General.SwapShell := FALSE;
-    TempStr := Substitute(General.FileArcInfo[AType].CmtLine,'%C',General.FileArcComment[CommentNum]);
-    TempStr := Substitute(TempStr,'%C',General.FileArcComment[CommentNum]);
-    ExecBatch(Ok,TempDir+'ARC\',General.ArcsPath+FunctionalMCI(TempStr,FileName,''),
-              General.FileArcInfo[AType].SuccLevel,ResultCode,FALSE);
-    General.SwapShell := SaveSwapShell;
-  END;
-END;
 
-PROCEDURE ArcIntegrityTest(VAR Ok: Boolean; AType: Byte; CONST FileName: AStr);
-VAR
-  ResultCode: SmallInt;
-BEGIN
-  IF (General.FileArcInfo[AType].TestLine <> '') THEN
-    ExecBatch(Ok,TempDir+'ARC\',General.ArcsPath+
-              FunctionalMCI(General.FileArcInfo[AType].TestLine,FileName,''),
-              General.FileArcInfo[AType].SuccLevel,ResultCode,FALSE);
-END;
+Begin
+  If (CommentNumber > 0) And (General.FileArcComment[CommentNumber] <> '') Then
+    Begin
+      SaveSwapShell := General.SwapShell;
+      General.SwapShell := FALSE;
+(*      TempStr := StringReplace(General.FileArcInfo[Atype].CmtLine,
+                 '%C', General.FileArcComment[CommentNumber]);
+      TempStr := StringReplace(
+                   TempStr,
+                   '%C',
+                   General.FileArcComment[CommentNumber]
+                 ); *)
 
-PROCEDURE ConvA(VAR Ok: Boolean; OldAType,NewAType: Byte; CONST OldFN,NewFN: AStr);
-VAR
-  NoFN: AStr;
-  PS: PathStr;
-  NS: NameStr;
-  ES: ExtStr;
-  FileTime: LongInt;
+{TempStr := Substitute(General.FileArcInfo[AType].CmtLine, @RemoveCode
+                 '%C', General.FileArcComment[CommentNumber]);}
+
+  {TempStr := Substitute(TempStr, '%C', General.FileArcComment[CommentNumber]);}
+
+      ExecBatch(Ok, TempDir+'arc\',
+                General.ArcsPath+FunctionalMCI(TempStr, FileName, ''),
+      General.FileArcInfo[AType].SuccLevel, ResultCode, False);
+      General.SwapShell := SaveSwapShell;
+    End;
+End;
+
+Procedure ArcIntegrityTest(Var Ok: Boolean; AType: Byte; Const FileName:
+                           AnsiString);
+
+Var
+  ResultCode: Byte;
+
+Begin
+  If (General.FileArcInfo[AType].TestLine <> '') Then
+    Begin
+
+      ExecBatch(Ok, TempDir+'arc\', General.ArcsPath+
+                FunctionalMCI(General.FileArcInfo[AType].TestLine, FileName,''),
+      General.FileArcInfo[AType].SuccLevel, ResultCode, False);
+    End;
+End;
+
+Procedure ConvA(Var Ok: Boolean; OldArchiveType, NewArchiveType: Byte; Const
+                OldFileName, NewFileName: AnsiString);
+
+Var
+  TempFileName: AnsiString;
+  Path: PathStr;
+  Name: NameStr;
+  Extension: ExtStr;
+  FileTime: TDateTime;
   Match: Boolean;
-BEGIN
+
+Begin
   Star('Converting archive - stage one.');
 
-  Match := (OldAType = NewAType);
-  IF (Match) THEN
-  BEGIN
-    FSplit(OldFN,PS,NS,ES);
-    NoFN := PS+NS+'.#$%';
-  END;
+  Match := (OldArchiveType = NewArchiveType);
+  If (Match) Then
+    Begin
+      FSplit(OldFileName, Path, Name, Extension);
+      TempFileName := Path+Name+'.#$%';
+    End;
 
-  GetFileDateTime(OldFN,FileTime);
+{  GetFileDateTime(OldFileName, FileTime);}
+(*  FileAge(OldFileName, FileTime); *)
 
-  ArcDeComp(Ok,OldAType,OldFN,'*.*');
-  IF (NOT Ok) THEN
-    Star('Errors in decompression!')
-  ELSE
-  BEGIN
-    Star('Converting archive - stage two.');
+  ArcDeComp(Ok, OldArchiveType, OldFileName, '*.*');
+  If (Not Ok) Then
+    Begin
+      Star('Errors in decompression!')
+    End
+  Else
+    Begin
+      Star('Converting archive - stage two.');
 
-    IF (Match) THEN
-      RenameFile('',OldFN,NoFN,Ok);
+      If (Match) Then
+        Begin
+          RenameFile({'', }OldFileName, TempFileName{, Ok});
+        End;
+        ArcComp(Ok,NewArchiveType, NewFileName, '*.*');
+      If (Not Ok) Then
+        Begin
+          Star('Errors in compression!');
+          If (Match) Then
+            Begin
+              RenameFile({'', }TempFileName, OldFileName{, Ok});
+            End;
+        End
+      Else
+        Begin
+{      SetFileDateTime(NewFileName, FileTime);}
+(*          FileSetDate(NewFileName, FileTime); *) {was int}
+        End;
+      If (Not Exist(SQOutSp(NewFileName))) Then
+        Begin
+          Ok := FALSE;
+        End;
+    End;
+  If (Exist(TempFileName)) Then
+    Begin
+      Kill(TempFileName);
+    End;
+End;
 
-    ArcComp(Ok,NewAType,NewFN,'*.*');
-    IF (NOT Ok) THEN
-    BEGIN
-      Star('Errors in compression!');
-      IF (Match) THEN
-        RenameFile('',NoFN,OldFN,Ok);
-    END
-    ELSE
+Function ArcType(FileName: AnsiString): Byte;
 
-      SetFileDateTime(NewFN,FileTime);
-
-    IF (NOT Exist(SQOutSp(NewFN))) THEN
-      Ok := FALSE;
-  END;
-  IF (Exist(NoFN)) THEN
-    Kill(NoFN);
-END;
-
-FUNCTION ArcType(FileName: AStr): Byte;
-VAR
+Var
   AType,
   Counter: Byte;
-BEGIN
+
+Begin
   AType := 0;
   Counter := 1;
-  WHILE (Counter <= MaxArcs) AND (AType = 0) DO
-  BEGIN
-    IF (General.FileArcInfo[Counter].Active) THEN
-      IF (General.FileArcInfo[Counter].Ext <> '') THEN
-        IF (General.FileArcInfo[Counter].Ext = Copy(FileName,(Length(FileName) - 2),3)) THEN
-          AType := Counter;
-    Inc(Counter);
-  END;
+  While (Counter <= MaxArcs) And (AType = 0) Do
+    Begin
+      If (General.FileArcInfo[Counter].Active) Then
+        Begin
+          If (General.FileArcInfo[Counter].Ext <> '') Then
+            Begin
+              If (General.FileArcInfo[Counter].Ext
+                 = Copy(FileName,(Length(FileName) - 2),3)) Then
+                Begin
+                  AType := Counter;
+                End;
+            End;
+        End;
+      Inc(Counter);
+    End;
   ArcType := AType;
-END;
+End;
 
-PROCEDURE ListArcTypes;
-VAR
-  RecNum,
-  RecNum1: Byte;
-BEGIN
-  RecNum1 := 0;
-  RecNum := 1;
-  WHILE (RecNum <= MaxArcs) AND (General.FileArcInfo[RecNum].Ext <> '') DO
-  BEGIN
-    IF (General.FileArcInfo[RecNum].Active) THEN
-    BEGIN
-      Inc(RecNum1);
-      IF (RecNum1 = 1) THEN
-        Prompt('^1Available archive formats: ')
-      ELSE
-        Prompt('^1,');
-      Prompt('^5'+General.FileArcInfo[RecNum].Ext+'^1');
-    END;
-    Inc(RecNum);
-  END;
-  IF (RecNum1 = 0) THEN
-    Prompt('No archive formats available.');
+Procedure ListArcTypes;
+
+Var
+  RecordNumber1,
+  RecordNumber2: Byte;
+
+Begin
+  RecordNumber2 := 0;
+  RecordNumber1 := 1;
+  While (RecordNumber1 <= MaxArcs) And (General.FileArcInfo[RecordNumber1].Ext <> '') Do
+    Begin
+      If (General.FileArcInfo[RecordNumber1].Active) Then
+        Begin
+          Inc(RecordNumber2);
+          If (RecordNumber2 = 1) Then
+            Begin
+              Prompt('^1Available archive formats: ')
+            End
+          Else
+            Begin
+              Prompt('^1,');
+            End;
+          Prompt('^5'+General.FileArcInfo[RecordNumber1].Ext+'^1');
+        End;
+      Inc(RecordNumber1);
+    End;
+  If (RecordNumber2 = 0) Then
+    Begin
+      Prompt('No archive formats available.');
+    End;
   NL;
-END;
+End;
 
-PROCEDURE InvArc;
-BEGIN
+Procedure InvArc;
+Begin
   NL;
   Print('Unsupported archive format.');
   NL;
   ListArcTypes;
-END;
+End;
 
-PROCEDURE ExtractToTemp;
-TYPE
-  TotalsRecordType = RECORD
+Procedure ExtractToTemp;
+
+Type
+  TotalsRecordType = Record
     TotalFiles: SmallInt;
     TotalSize: LongInt;
-  END;
-VAR
+  End;
+
+Var
   Totals: TotalsRecordType;
-  FileName,
-  ArcFileName: AStr;
-  (*
-  DirInfo: SearchRec;
-  *)
-  DS: DirStr;
-  NS: NameStr;
-  ES: ExtStr;
-  Cmd: Char;
-  AType: Byte;
-  ReturnCode: SmallInt;
-  DirFileRecNum: Integer;
+  FileName : ShortString;
+  ArcFileName,
+  ArchiveFileName: AnsiString;
+  DirInfo: TRawByteSearchRec;
+  Directory: DirStr;
+  Name: NameStr;
+  Extension: ExtStr;
+  Command: Char;
+  AType,
+  ArchiveType,
+  ReturnCode: Byte;
+  DirectoryFileRecordNumber: LongInt;
   DidSomething,
   Ok: Boolean;
-BEGIN
+Begin
   NL;
   Print('Extract to temporary directory -');
   NL;
   Prompt('^1Already in TEMP: ');
 
-  FillChar(Totals,SizeOf(Totals),0);
-  FindFirst(TempDir+'ARC\*.*',AnyFile - Directory - VolumeID - Hidden - SysFile,DirInfo);
-  WHILE (DOSError = 0) DO
-  BEGIN
-    Inc(Totals.TotalFiles);
-    Inc(Totals.TotalSize,DirInfo.Size);
-    FindNext(DirInfo);
-  END;
+  FillChar(Totals, SizeOf(Totals), 0);
 
-  IF (Totals.TotalFiles = 0) THEN
-    Print('^5Nothing.^1')
-  ELSE
-    Print('^5'+FormatNumber(Totals.TotalFiles)+
-          ' '+Plural('file',Totals.TotalFiles)+
-          ', '+ConvertBytes(Totals.TotalSize,FALSE)+'.^1');
+(*  FindFirst(TempDir+'arc\*.*',AnyFile - Directory - VolumeID - Hidden - SysFile, DirInfo); *)
 
-  IF (NOT FileSysOp) THEN
-  BEGIN
-    NL;
-    Print('The limit is '+FormatNumber(General.MaxInTemp)+'k bytes.');
-    IF (Totals.TotalSize > (General.MaxInTemp * 1024)) THEN
-    BEGIN
+  While (DOSError = 0) Do
+    Begin
+      Inc(Totals.TotalFiles);
+      Inc(Totals.TotalSize, DirInfo.Size);
+      FindNext(DirInfo);
+    End;
+
+  If (Totals.TotalFiles = 0) Then
+    Begin
+      Print('^5Nothing.^1')
+    End
+  Else
+    Begin
+      Print('^5'+FormatNumber(Totals.TotalFiles)+
+      ' '+Plural('file',Totals.TotalFiles)+
+      ', '+ConvertBytes(Totals.TotalSize, False)+'.^1');
+    End;
+  If (Not FileSysOp) Then
+    Begin
       NL;
-      Print('You have exceeded this limit.');
-      NL;
-      Print('Please remove some files with the user-archive command.');
-      Exit;
-    END;
-  END;
+      Print('The limit is '+FormatNumber(General.MaxInTemp)+'k bytes.');
+      If (Totals.TotalSize > (General.MaxInTemp * 1024)) Then
+        Begin
+          NL;
+          Print('You have exceeded this limit.');
+          NL;
+          Print('Please remove some files with the user-archive command.');
+          Exit;
+        End;
+    End;
 
   NL;
   Prt('File name: ');
-  IF (FileSysOp) THEN
-  BEGIN
-    MPL(52);
-    Input(FileName,52);
-  END
-  ELSE
-  BEGIN
-    MPL(12);
-    Input(FileName,12);
-  END;
+  If (FileSysOp) Then
+    Begin
+      SetLength(FileName, 52);
+      MPL(52);
+      Input(FileName,52);
+    End
+  Else
+    Begin
+      SetLength(FileName, 12);
+      MPL(12);
+      Input(FileName,12);
+    End;
 
   FileName := SQOutSp(FileName);
 
-  IF (FileName = '') THEN
-  BEGIN
-    NL;
-    Print('Aborted!');
-    Exit;
-  END;
-
-  IF (IsUL(FileName)) AND (NOT FileSysOp) THEN
-  BEGIN
-    NL;
-    Print('^7Invalid file name!^1');
-    Exit;
-  END;
-
-  IF (Pos('.',FileName) = 0) THEN
-    FileName := FileName + '*.*';
-
-  Ok := TRUE;
-
-  IF (NOT IsUL(FileName)) THEN
-  BEGIN
-    RecNo(FileInfo,FileName,DirFileRecNum);
-    IF (BadDownloadPath) THEN
-      Exit;
-    IF (NOT AACS(MemFileArea.DLACS)) THEN
-    BEGIN
+  If (FileName = '') Then
+    Begin
       NL;
-      Print('^7You do not have access to manipulate that file!^1');
+      Print('AbortRGed!');
       Exit;
-    END
-    ELSE IF (DirFileRecNum = -1) THEN
-    BEGIN
-      NL;
-      Print('^7File not found!^1');
-      Exit;
-    END
-    ELSE
-    BEGIN
-      Seek(FileInfoFile,DirFileRecNum);
-      Read(FileInfoFile,FileInfo);
-      IF Exist(MemFileArea.DLPath+FileInfo.FileName) THEN
-        ArcFileName := MemFileArea.DLPath+SQOutSp(FileInfo.FileName)
-      ELSE
-        ArcFileName := MemFileArea.ULPath+SQOutSp(FileInfo.FileName);
-    END;
+    End;
 
-  END
-  ELSE
-  BEGIN
-    ArcFileName := FExpand(FileName);
-    IF (NOT Exist(ArcFileName)) THEN
-    BEGIN
+  If (IsUL(FileName)) And (Not FileSysOp) Then
+    Begin
       NL;
-      Print('^7File not found!^1');
+      Print('^7Invalid file name!^1');
       Exit;
-    END
-    ELSE
-    BEGIN
-      FillChar(FileInfo,SizeOf(FileInfo),0);
-      WITH FileInfo DO
-      BEGIN
-        FileName := Align(StripName(ArcFileName));
-        Description := 'Unlisted file';
-        FilePoints := 0;
-        Downloaded := 0;
-        FileSize := GetFileSize(ArcFileName);
-        OwnerNum := UserNum;
-        OwnerName := Caps(ThisUser.Name);
-        FileDate := Date2PD(DateStr);
-        VPointer := -1;
-        VTextSize := 0;
-        FIFlags := [];
-      END;
-    END;
-  END;
-  IF (Ok) THEN
-  BEGIN
-    DidSomething := FALSE;
-    Abort := FALSE;
-    Next := FALSE;
-    AType := ArcType(ArcFileName);
-    IF (AType = 0) THEN
-      InvArc;
-    NL;
-    Print('You can (^5C^1)opy this file into the TEMP Directory,');
-    IF (AType <> 0) THEN
-      Print('or (^5E^1)xtract files from it into the TEMP Directory.')
-    ELSE
-      Print('but you can''t extract files from it.');
-    NL;
-    Prt('Which? (^5C^4=^5Copy'+AOnOff((AType <> 0),'^4,^5E^4=^5Extract','')+'^4,^5Q^4=^5Quit^4): ');
-    OneK(Cmd,'QC'+AOnOff((AType <> 0),'E',''),TRUE,TRUE);
-    CASE Cmd OF
-      'C' : BEGIN
-              FSplit(ArcFileName,DS,NS,ES);
-              NL;
-              IF CopyMoveFile(TRUE,'^5Progress: ',ArcFileName,TempDir+'ARC\'+NS+ES,TRUE) THEN
-                DidSomething := TRUE;
-            END;
-      'E' : BEGIN
-              NL;
-              DisplayFileInfo(FileInfo,TRUE);
-              REPEAT
+    End;
+
+  If (Pos('.', FileName) = 0) Then
+    Begin
+      SetLength(FileName, SizeOf(FileName) + 2);
+      FileName := FileName + '*.*';
+    End;
+  Ok := True;
+
+  If (Not IsUL(FileName)) Then
+    Begin
+      RecNo(FileInfo,FileName,DirectoryFileRecordNumber);
+      If (BadDownloadPath) Then
+        Exit;
+      If (Not AACS(MemFileArea.DLACS)) Then
+        Begin
+          NL;
+          Print('^7You do not have access to manipulate that file!^1');
+          Exit;
+        End
+      Else If (DirectoryFileRecordNumber = -1) Then
+             Begin
+               NL;
+               Print('^7File not found!^1');
+               Exit;
+             End
+      Else
+        Begin
+          Seek(FileInfoFile,DirectoryFileRecordNumber);
+          Read(FileInfoFile,FileInfo);
+          If Exist(MemFileArea.DLPath+FileInfo.FileName) Then
+            ArcFileName := MemFileArea.DLPath+SQOutSp(FileInfo.FileName)
+          Else
+            ArcFileName := MemFileArea.ULPath+SQOutSp(FileInfo.FileName);
+        End;
+
+    End
+  Else
+    Begin
+      ArchiveFileName := FExpand(FileName);
+      If (Not Exist(ArchiveFileName)) Then
+        Begin
+          NL;
+          Print('^7File not found!^1');
+          Exit;
+        End
+      Else
+        Begin
+          FillChar(FileInfo,SizeOf(FileInfo),0);
+          With FileInfo Do
+            Begin
+              FileName := Align(StripName(ArchiveFileName));
+              Description := 'Unlisted file';
+              FilePoints := 0;
+              Downloaded := 0;
+              FileSize := GetFileSize(ArchiveFileName);
+              OwnerNum := UserNum;
+              OwnerName := ThisUser.Name;
+              FileDate := Date2PD(DateStr);
+              VPointer := -1;
+              VTextSize := 0;
+              FIFlags := [];
+            End;
+        End;
+    End;
+  If (Ok) Then
+    Begin
+      DidSomething := False;
+      AbortRG := False;
+      Next := False;
+      AType := ArcType(ArchiveFileName);
+      If (AType = 0) Then
+        InvArc;
+      NL;
+      Print('You can (^5C^1)opy this file into the TEMP Directory,');
+      { @ConvertToString }
+      If (AType <> 0) Then
+        Print('or (^5E^1)xtract files from it into the TEMP Directory.')
+        { @ConvertToString }
+      Else
+        Print('but you can''t extract files from it.'); { @ConvertToString }
+      NL;
+      Prt('Which? (^5C^4=^5Copy'+AOnOff((AType <> 0),'^4,^5E^4=^5Extract','')
+      +'^4,^5Q^4=^5Quit^4): '); { @ConvertToString }
+      OneK(Command,'QC'+AOnOff((AType <> 0),'E',''), True, True);
+      Case Command Of
+        'C' :
+              Begin
+                FSplit(ArchiveFileName, Directory, Name, Extension);
                 NL;
-                Prt('Extract files (^5E^4=^5Extract^4,^5V^4=^5View^4,^5Q^4=^5Quit^4): ');
-                OneK(Cmd,'QEV',TRUE,TRUE);
-                CASE Cmd OF
-                  'E' : BEGIN
-                          NL;
-                          IF PYNQ('Extract all files? ',0,FALSE) THEN
-                            FileName := '*.*'
-                          ELSE
-                          BEGIN
-                            NL;
-                            Prt('File name: ');
-                            MPL(12);
-                            Input(FileName,12);
-                            FileName := SQOutSp(FileName);
-                            IF (FileName = '') THEN
-                            BEGIN
-                              NL;
-                              Print('Aborted!');
-                            END
-                            ELSE IF IsUL(FileName) THEN
-                            BEGIN
-                              NL;
-                              Print('^7Illegal filespec!^1');
-                              FileName := '';
-                            END;
-                          END;
-                          IF (FileName <> '') THEN
-                          BEGIN
-                            Ok := FALSE;
-                            ExecBatch(Ok,TempDir+'ARC\',General.ArcsPath+
-                                      FunctionalMCI(General.FileArcInfo[AType].UnArcLine,ArcFileName,FileName),
-                                      General.FileArcInfo[AType].SuccLevel,ReturnCode,FALSE);
-                            IF (Ok) THEN
-                            BEGIN
-                              NL;
-                              Star('Decompressed '+FileName+' into TEMP from '+StripName(ArcFileName));
-                              SysOpLog('Decompressed '+FileName+' into '+TempDir+'ARC\ from '+StripName(ArcFileName));
-                              DidSomething := TRUE;
-                            END
-                            ELSE
-                            BEGIN
-                              NL;
-                              Star('Error decompressing '+FileName+' into TEMP from '+StripName(ArcFileName));
-                              SysOpLog('Error decompressing '+FileName+' into '+TempDir+'ARC\ from '+StripName(ArcFileName));
-                            END;
-                          END;
-                        END;
-                  'V' : IF (IsUL(ArcFileName)) THEN
-                          ViewInternalArchive(ArcFileName)
-                        ELSE
-                        BEGIN
-                          IF Exist(MemFileArea.DLPath+FileInfo.FileName) THEN
-                            ViewInternalArchive(MemFileArea.DLPath+FileInfo.FileName)
-                          ELSE
-                            ViewInternalArchive(MemFileArea.ULPath+FileInfo.FileName);
-                        END;
-                END;
-              UNTIL (Cmd = 'Q') OR (HangUp);
-           END;
-    END;
-    IF (DidSomething) THEN
-    BEGIN
-      NL;
-      Print('^5NOTE: ^1Use the user archive menu command to access');
-      Print('        files in the TEMP directory.^1');
-    END;
-  END;
-  LastError := IOResult;
-END;
 
-PROCEDURE UserArchive;
-VAR
+                If CopyMoveFile(TRUE,'^5Progress: ',ArcFileName,TempDir+'arc\'{+
+                   NS+ES},TRUE) Then
+                  DidSomething := True;
+              End;
+        'E' :
+              Begin
+                NL;
+                DisplayFileInfo(FileInfo,True);
+                Repeat
+                  NL;
+                  Prt(
+             'Extract files (^5E^4=^5Extract^4,^5V^4=^5View^4,^5Q^4=^5Quit^4): '
+                  ); { @ConvertToString }
+                  OneK(Command,'QEV',TRUE,TRUE);
+                  Case Command Of
+                    'E' :
+                          Begin
+                            NL;
+                            If PYNQ('Extract all files? ',0, False) Then
+                              { @ConvertToString }
+                              FileName := '*.*'
+                            Else
+                              Begin
+                                NL;
+                                Prt('File name: ');
+                                { @ConvertToString }
+                                MPL(12);
+                                SetLength(FileName, 12);
+                                Input(FileName,12);
+                                FileName := SQOutSp(FileName);
+                                If (FileName = '') Then
+                                  Begin
+                                    NL;
+                                    Print('AbortRGed!');
+                                  End
+                                Else If IsUL(FileName) Then
+                                       Begin
+                                         NL;
+                                         Print('^7Illegal filespec!^1');
+                                         FileName := '';
+                                       End;
+                              End;
+                            If (FileName <> '') Then
+                              Begin
+                                Ok := FALSE;
+
+                                ExecBatch(Ok,TempDir+'arc\',
+                                          General.ArcsPath+
+                                          FunctionalMCI(General.FileArcInfo[
+                                          AType].UnArcLine,
+                                          ArcFileName,FileName),
+                                General.FileArcInfo[AType].SuccLevel,ReturnCode,
+                                FALSE);
+                                If (Ok) Then
+                                  Begin
+                                    NL;
+                                    Star('Decompressed '+FileName+
+                                         ' into TEMP from '+StripName(
+                                         ArcFileName));
+                                    SysOpLog('Decompressed '+FileName+' into '+
+
+                                             TempDir+'arc\ from '+StripName(
+                                             ArcFileName));
+                                    DidSomething := TRUE;
+                                  End
+                                Else
+                                  Begin
+                                    NL;
+                                    Star('Error decompressing '+FileName+
+                                         ' into TEMP from '+StripName(
+                                         ArcFileName));
+                                    SysOpLog('Error decompressing '+FileName+
+                                             ' into '+TempDir+'arc\ from '+
+                                             StripName(ArcFileName));
+                                  End;
+                              End;
+                          End;
+                    'V' : If (IsUL(ArchiveFileName)) Then
+                            ViewInternalArchive(ArchiveFileName)
+                          Else
+                            Begin
+                              If FileExists(MemFileArea.DLPath+FileInfo.FileName
+                                 ) Then
+                                ViewInternalArchive(MemFileArea.DLPath+FileInfo.
+                                                    FileName)
+                              Else
+                                ViewInternalArchive(MemFileArea.ULPath+FileInfo.
+                                                    FileName);
+                            End;
+                  End;
+                Until (Command = 'Q') Or (HangUp);
+              End;
+      End;
+      If (DidSomething) Then
+        Begin
+          NL;
+          Print('^5NOTE: ^1Use the user archive menu command to access');
+          Print('        files in the TEMP directory.^1');
+        End;
+    End;
+  LastError := IOResult;
+End;
+
+Procedure UserArchive;
+
+Var
   User: UserRecordType;
-  (*
-  DirInfo: SearchRec;
-  *)
+
+  DirInfo: TRawByteSearchRec;
+
   TransferFlags: TransferFlagSet;
-  ArcFileName,
-  FName: Str12;
-  Cmd: Char;
+  ArcFileName: ShortString;
+  ArchiveFileName,
+  FName: ShortString;
+  FileName: AnsiString;
+  // Str12;
+  Cmd,
+  Command: Char;
   AType,
   SaveNumBatchDLFiles: Byte;
-  ReturnCode: SmallInt;
+  ReturnCode: Byte;
   GotPts,
-  SaveFileArea: Integer;
+  SaveFileArea: LongInt;
   Ok,
   SaveFileCreditRatio: Boolean;
+{@Pickup}
+Function OkName(FileName1: AStr): Boolean;
+Begin
+  OkName := TRUE;
+  OkName := Not IsWildCard(FileName1);
+  If (IsUL(FileName1)) Then
+    OkName := FALSE;
+End;
 
-  FUNCTION OkName(FileName1: AStr): Boolean;
-  BEGIN
-    OkName := TRUE;
-    OkName := NOT IsWildCard(FileName1);
-    IF (IsUL(FileName1)) THEN
-      OkName := FALSE;
-  END;
-
-BEGIN
-  REPEAT
+Begin
+  Repeat
     NL;
     Prt('Temp archive menu [^5?^4=^5Help^4]: ');
     OneK(Cmd,'QADLRVT?',TRUE,TRUE);
-    CASE Cmd OF
-      'A' : BEGIN
+    Case Cmd Of
+      'A' :
+            Begin
               NL;
               Prt('Archive name: ');
               MPL(12);
               Input(ArcFileName,12);
-              IF (ArcFileName = '') THEN
-              BEGIN
-                NL;
-                Print('Aborted!');
-              END
-              ELSE
-              BEGIN
-
-                LoadFileArea(FileArea);
-
-                IF (Pos('.',ArcFileName) = 0) AND (MemFileArea.ArcType <> 0) THEN
-                  ArcFileName := ArcFileName+'.'+General.FileArcInfo[MemFileArea.ArcType].Ext;
-
-                AType := ArcType(ArcFileName);
-                IF (AType = 0) THEN
-                  InvArc
-                ELSE
-                BEGIN
+              If (ArcFileName = '') Then
+                Begin
                   NL;
-                  Prt('File name: ');
-                  MPL(12);
-                  Input(FName,12);
-                  IF (FName = '') THEN
-                  BEGIN
-                    NL;
-                    Print('Aborted!');
-                  END
-                  ELSE IF (IsUL(FName)) OR (Pos('@',FName) > 0) THEN
-                  BEGIN
-                    NL;
-                    Print('^7Illegal file name!^1');
-                  END
-                  ELSE IF (NOT Exist(TempDir+'ARC\'+FName)) THEN
-                  BEGIN
-                    NL;
-                    Print('^7File not found!^1');
-                  END
-                  ELSE
-                  BEGIN
-                    Ok := FALSE;
-                    ExecBatch(Ok,TempDir+'ARC\',General.ArcsPath+
-                              FunctionalMCI(General.FileArcInfo[AType].ArcLine,TempDir+'ARC\'+ArcFileName,FName),
-                              General.FileArcInfo[AType].SuccLevel,ReturnCode,FALSE);
-                    IF (Ok) THEN
-                    BEGIN
+                  Print('AbortRGed!');
+                End
+              Else
+                Begin
+
+                  LoadFileArea(FileArea);
+
+                  If (Pos('.',ArcFileName) = 0) And (MemFileArea.ArcType <> 0)
+                    Then
+                    ArcFileName := ArcFileName+'.'+General.FileArcInfo[
+                                   MemFileArea.ArcType].Ext;
+
+                  AType := ArcType(ArcFileName);
+                  If (AType = 0) Then
+                    InvArc
+                  Else
+                    Begin
                       NL;
-                      Star('Compressed "^5'+FName+'^3" into "^5'+ArcFileName+'^3"');
-                      SysOpLog('Compressed "^5'+FName+'^1" into "^5'+TempDir+'ARC\'+ArcFileName+'^1"')
-                    END
-                    ELSE
-                    BEGIN
-                      NL;
-                      Star('Error compressing "^5'+FName+'^3" into "^5'+ArcFileName+'^3"');
-                      SysOpLog('Error compressing "^5'+FName+'^1" into "^5'+TempDir+'ARC\'+ArcFileName+'^1"');
-                    END;
-                  END;
-                END;
-              END;
-            END;
-      'D' : BEGIN
+                      Prt('File name: ');
+                      MPL(12);
+                      Input(FName,12);
+                      If (FName = '') Then
+                        Begin
+                          NL;
+                          Print('AbortRGed!');
+                        End
+                      Else If (IsUL(FName)) Or (Pos('@',FName) > 0) Then
+                             Begin
+                               NL;
+                               Print('^7Illegal file name!^1');
+                             End
+
+                      Else If (Not Exist(TempDir+'arc\'+FName)) Then
+
+                             Begin
+                               NL;
+                               Print('^7File not found!^1');
+                             End
+                      Else
+                        Begin
+                          Ok := FALSE;
+                          ExecBatch(Ok,TempDir+'arc\',General.ArcsPath+
+                                    FunctionalMCI(General.FileArcInfo[AType].
+                                    ArcLine,TempDir+'arc\'+ArcFileName,FName),
+                          General.FileArcInfo[AType].SuccLevel,ReturnCode,FALSE)
+                          ;
+                          If (Ok) Then
+                            Begin
+                              NL;
+                              Star('Compressed "^5'+FName+'^3" into "^5'+
+                                   ArcFileName+'^3"');
+                              SysOpLog('Compressed "^5'+FName+'^1" into "^5'+
+
+                                       TempDir+'arc\'+ArcFileName+'^1"')
+
+                            End
+                          Else
+                            Begin
+                              NL;
+                              Star('Error compressing "^5'+FName+'^3" into "^5'+
+                                   ArcFileName+'^3"');
+                              SysOpLog('Error compressing "^5'+FName+
+
+                                       '^1" into "^5'+TempDir+'arc\'+ArcFileName
+
+                                       +'^1"');
+                            End;
+                        End;
+                    End;
+                End;
+            End;
+      'D' :
+            Begin
               NL;
               Prt('File name: ');
               MPL(12);
               Input(FName,12);
-              IF (FName = '') THEN
-              BEGIN
-                NL;
-                Print('Aborted!');
-              END
-              ELSE IF (NOT OkName(FName)) THEN
-              BEGIN
-                NL;
-                Print('^7Illegal file name!^1');
-              END
-              ELSE
-              BEGIN
-                FindFirst(TempDir+'ARC\'+FName,AnyFile - Directory - VolumeID - Hidden - SysFile,DirInfo);
-                IF (DOSError <> 0) THEN
-                BEGIN
+              If (FName = '') Then
+                Begin
                   NL;
-                  Print('^7File not found!^1');
-                END
-                ELSE
-                BEGIN
-                  SaveFileArea := FileArea;
-                  FileArea := -1;
-                  WITH MemFileArea DO
-                  BEGIN
-                    AreaName := 'Temp Archive';
-                    DLPath := TempDir+'ARC\';
-                    ULPath := TempDir+'ARC\';
-                    FAFlags := [];
-                  END;
+                  Print('AbortRGed!');
+                End
+              Else If (Not OkName(FName)) Then
+                     Begin
+                       NL;
+                       Print('^7Illegal file name!^1');
+                     End
+              Else
+                Begin
+
+                  FindFirst(TempDir+'arc\'+FName,AnyFile - Directory - VolumeID
+
+                            - Hidden - SysFile,DirInfo);
+                  If (DOSError <> 0) Then
+                    Begin
+                      NL;
+                      Print('^7File not found!^1');
+                    End
+                  Else
+                    Begin
+                      SaveFileArea := FileArea;
+                      FileArea := -1;
+                      With MemFileArea Do
+                        Begin
+                          AreaName := 'Temp Archive';
+                          DLPath := TempDir+'arc\';
+                          ULPath := TempDir+'arc\';
+                          FAFlags := [];
+                        End;
                   (* Consider charging points, ext. *)
-                  LoadURec(User,1);
-                  WITH FileInfo DO
-                  BEGIN
-                    FileName := Align(FName);
-                    Description := 'Temporary Archive';
-                    FilePoints := 0;
-                    Downloaded := 0;
-                    FileSize := GetFileSize(TempDir+'ARC\'+FileName);;
-                    OwnerNum := 1;
-                    OwnerName := Caps(User.Name);
-                    FileDate := Date2PD(DateStr);
-                    VPointer := -1;
-                    VTextSize := 0;
-                    FIFlags := [];
-                  END;
-                  TransferFlags := [IsTempArc,IsCheckRatio];
-                  SaveNumBatchDLFiles := NumBatchDLFiles;
-                  DLX(FileInfo,-1,TransferFlags);
-                  FileArea := SaveFileArea;
-                  LoadFileArea(FileArea);
-                  IF (NumBatchDLFiles <> SaveNumBatchDLFiles) THEN
-                  BEGIN
-                    NL;
-                    Print('^5REMEMBER: ^1If you delete this file from the temporary directory,');
-                    Print('            you will not be able to download it in your batch queue.');
-                  END;
-                END;
-              END;
-            END;
-      'L' : BEGIN
+                      LoadURec(User,1);
+                      With FileInfo Do
+                        Begin
+                          FileName := Align(FName);
+                          Description := 'Temporary Archive';
+                          FilePoints := 0;
+                          Downloaded := 0;
+
+
+                          FileSize := GetFileSize(TempDir+'arc\'+FileName);
+                          OwnerNum := 1;
+                          OwnerName := Caps(User.Name);
+                          FileDate := Date2PD(DateStr);
+                          VPointer := -1;
+                          VTextSize := 0;
+                          FIFlags := [];
+                        End;
+                      TransferFlags := [IsTempArc,IsCheckRatio];
+                      SaveNumBatchDLFiles := NumBatchDLFiles;
+                      DLX(FileInfo,-1,TransferFlags);
+                      FileArea := SaveFileArea;
+                      LoadFileArea(FileArea);
+                      If (NumBatchDLFiles <> SaveNumBatchDLFiles) Then
+                        Begin
+                          NL;
+                          Print(
+           '^5REMEMBER: ^1If you delete this file from the temporary directory,'
+                          );
+                          Print(
+          '            you will not be able to download it in your batch queue.'
+                          );
+                        End;
+                    End;
+                End;
+            End;
+      'L' :
+            Begin
               AllowContinue := TRUE;
               NL;
-              DosDir(TempDir+'ARC\','*.*',TRUE);
+              DosDir(TempDir+'arc\','*.*',TRUE);
               AllowContinue := FALSE;
-              SysOpLog('Listed temporary directory: "^5'+TempDir+'ARC\*.*^1"');
-            END;
-      'R' : BEGIN
+              SysOpLog('Listed temporary directory: "^5'+TempDir+'arc\*.*^1"');
+            End;
+      'R' :
+            Begin
               NL;
               Prt('File mask: ');
               MPL(12);
               Input(FName,12);
-              IF (FName = '') THEN
-              BEGIN
-                NL;
-                Print('Aborted!');
-              END
-              ELSE IF (IsUL(FName)) THEN
-              BEGIN
-                NL;
-                Print('^7Illegal file name!^1');
-              END
-              ELSE
-              BEGIN
-                FindFirst(TempDir+'ARC\'+FName,AnyFile - Directory - VolumeID - Hidden - SysFile,DirInfo);
-                IF (DOSError <> 0) THEN
-                BEGIN
+              If (FName = '') Then
+                Begin
                   NL;
-                  Print('^7File not found!^1');
-                END
-                ELSE
-                BEGIN
-                  NL;
-                  REPEAT
-                    Kill(TempDir+'ARC\'+DirInfo.Name);
-                    Star('Removed temporary archive file: "^5'+DirInfo.Name+'^3"');
-                    SysOpLog('^1Removed temp arc file: "^5'+TempDir+'ARC\'+DirInfo.Name+'^1"');
-                    FindNext(DirInfo);
-                  UNTIL (DOSError <> 0) OR (HangUp);
-                END;
-              END;
-            END;
-      'T' : BEGIN
+                  Print('AbortRGed!');
+                End
+              Else If (IsUL(FName)) Then
+                     Begin
+                       NL;
+                       Print('^7Illegal file name!^1');
+                     End
+              Else
+                Begin
+
+                  FindFirst(TempDir+'arc\'+FName,AnyFile - Directory - VolumeID
+
+                            - Hidden - SysFile,DirInfo);
+                  If (DOSError <> 0) Then
+                    Begin
+                      NL;
+                      Print('^7File not found!^1');
+                    End
+                  Else
+                    Begin
+                      NL;
+                      Repeat
+                        Kill(TempDir+'arc\'+DirInfo.Name);
+                        Star('Removed temporary archive file: "^5'+DirInfo.Name+
+                             '^3"');
+                        SysOpLog('^1Removed temp arc file: "^5'+TempDir+'arc\'+
+                                 DirInfo.Name+'^1"');
+                        FindNext(DirInfo);
+                      Until (DOSError <> 0) Or (HangUp);
+                    End;
+                End;
+            End;
+      'T' :
+            Begin
               NL;
               Prt('File name: ');
               MPL(12);
               Input(FName,12);
-              IF (FName = '') THEN
-              BEGIN
-                NL;
-                Print('Aborted!');
-              END
-              ELSE IF (NOT OkName(FName)) THEN
-              BEGIN
-                NL;
-                Print('^7Illegal file name!^1');
-              END
-              ELSE
-              BEGIN
-                FindFirst(TempDir+'ARC\'+FName,AnyFile - Directory - VolumeID - Hidden - SysFile,DirInfo);
-                IF (DOSError <> 0) THEN
-                BEGIN
+              If (FName = '') Then
+                Begin
                   NL;
-                  Print('^7File not found!^1');
-                END
-                ELSE
-                BEGIN
-                  NL;
-                  PrintF(TempDir+'ARC\'+DirInfo.Name);
-                  SysOpLog('Displayed temp arc file: "^5'+TempDir+'ARC\'+DirInfo.Name+'^1"');
-                END;
-              END;
-            END;
-      'V' : BEGIN
+                  Print('AbortRGed!');
+                End
+              Else If (Not OkName(FName)) Then
+                     Begin
+                       NL;
+                       Print('^7Illegal file name!^1');
+                     End
+              Else
+                Begin
+
+                  FindFirst(TempDir+'arc\'+FName,AnyFile - Directory - VolumeID
+
+                            - Hidden - SysFile,DirInfo);
+                  If (DOSError <> 0) Then
+                    Begin
+                      NL;
+                      Print('^7File not found!^1');
+                    End
+                  Else
+                    Begin
+                      NL;
+                      PrintF(TempDir+'arc\'+DirInfo.Name);
+                      SysOpLog('Displayed temp arc file: "^5'+TempDir+'arc\'+
+                               DirInfo.Name+'^1"');
+                    End;
+                End;
+            End;
+      'V' :
+            Begin
               NL;
               Prt('File mask: ');
               MPL(12);
               Input(FName,12);
-              IF (FName = '') THEN
-              BEGIN
-                NL;
-                Print('Aborted!');
-              END
-              ELSE IF (NOT ValidIntArcType(FName)) THEN
-              BEGIN
-                NL;
-                Print('^7Not a valid archive type or not supported!^1')
-              END
-              ELSE
-              BEGIN
-                FindFirst(TempDir+'ARC\'+FName,AnyFile - Directory - VolumeID - Hidden - SysFile,DirInfo);
-                IF (DOSError <> 0) THEN
-                BEGIN
+              If (FName = '') Then
+                Begin
                   NL;
-                  Print('^7File not found!^1');
-                END
-                ELSE
-                BEGIN
-                  Abort := FALSE;
-                  Next := FALSE;
-                  REPEAT
-                    ViewInternalArchive(TempDir+'ARC\'+DirInfo.Name);
-                    SysOpLog('Viewed temp arc file: "^5'+TempDir+'ARC\'+DirInfo.Name+'^1"');
-                    FindNext(DirInfo);
-                  UNTIL (DOSError <> 0) OR (Abort) OR (HangUp);
-                END;
-              END;
-            END;
-      '?' : BEGIN
+                  Print('AbortRGed!');
+                End
+              Else If (Not ValidIntArcType(FName)) Then
+                     Begin
+                       NL;
+                       Print('^7Not a valid archive type or not supported!^1')
+                     End
+              Else
+                Begin
+                  FindFirst(TempDir+'arc\'+FName,AnyFile - Directory - VolumeID
+                            - Hidden - SysFile,DirInfo);
+                  If (DOSError <> 0) Then
+                    Begin
+                      NL;
+                      Print('^7File not found!^1');
+                    End
+                  Else
+                    Begin
+                      AbortRG := FALSE;
+                      Next := FALSE;
+                      Repeat
+
+                        ViewInternalArchive(TempDir+'arc\'+DirInfo.Name);
+                        SysOpLog('Viewed temp arc file: "^5'+TempDir+'arc\'+
+
+                                 DirInfo.Name+'^1"');
+                        FindNext(DirInfo);
+                      Until (DOSError <> 0) Or (AbortRG) Or (HangUp);
+                    End;
+                End;
+            End;
+      '?' :
+            Begin
               NL;
               ListArcTypes;
               NL;
@@ -713,11 +911,11 @@ BEGIN
               LCmds(30,3,'Text view file','');
               LCmds(30,3,'View archive','');
               LCmds(30,3,'Quit','');
-            END;
-    END;
-  UNTIL (Cmd = 'Q') OR (HangUp);
+            End;
+    End;
+  Until (Cmd = 'Q') Or (HangUp);
   LastCommandOvr := TRUE;
   LastError := IOResult;
-END;
+End;
 
-END.
+End.

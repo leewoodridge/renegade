@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S-,V-}
 
@@ -214,7 +211,7 @@ VAR
   VAR
     S1: AStr;
   BEGIN
-    IF (NOT Abort) THEN
+    IF (NOT AbortRG) THEN
     BEGIN
       IF (Cp = NIL) THEN
         S1 := '      ^5'+'[^3'+'END^5'+']'
@@ -226,7 +223,7 @@ VAR
 
   PROCEDURE PL;
   BEGIN
-    Abort := FALSE;
+    AbortRG := FALSE;
     PLine(CurLine,Cur);
   END;
 
@@ -243,11 +240,11 @@ BEGIN
   AllRead := TRUE;
   IF (FSpec = '') THEN
   BEGIN
-    Print('Aborted.');
+    Print('AbortRGed.');
   END
   ELSE
   BEGIN
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     TotalLines := 0;
     New(Cur);
@@ -262,7 +259,7 @@ BEGIN
       IF (IOResult <> 0) THEN
       BEGIN
         Print('Error reading file.');
-        Abort := TRUE;
+        AbortRG := TRUE;
       END
       ELSE
       BEGIN
@@ -277,10 +274,10 @@ BEGIN
     END
     ELSE
     BEGIN
-      Abort := NOT NewPtr(Nex);
+      AbortRG := NOT NewPtr(Nex);
       Top := Nex;
       Print('^1Loading...');
-      WHILE ((NOT EOF(Fil)) AND (NOT Abort)) DO
+      WHILE ((NOT EOF(Fil)) AND (NOT AbortRG)) DO
       BEGIN
         Inc(TotalLines);
         Cur^.Next := Nex;
@@ -288,7 +285,7 @@ BEGIN
         Cur := Nex;
         ReadLn(Fil,S);
         Cur^.S := S;
-        Abort := NOT NewPtr(Nex);
+        AbortRG := NOT NewPtr(Nex);
       END;
       Close(Fil);
       Cur^.Next :=  NIL;
@@ -298,16 +295,16 @@ BEGIN
         Top := NIL;
       END;
       Bottom := Cur;
-      IF (Abort) THEN
+      IF (AbortRG) THEN
       BEGIN
         NL;
         Print(^G^G'|12WARNING: |10Not all of file read.^3');
         NL;
         AllRead := FALSE;
       END;
-      Abort := FALSE;
+      AbortRG := FALSE;
     END;
-    IF (NOT Abort) THEN
+    IF (NOT AbortRG) THEN
     BEGIN
       Print('Total lines: '+IntToStr(TotalLines));
       Cur := Top;
@@ -356,7 +353,7 @@ BEGIN
                     LCmds(14,3,'Print line','List');
                     LCmds(14,3,'Insert lines','Delete line');
                     LCmds(14,3,'Replace line','Clear all');
-                    LCmds(14,3,'Quit (Abort)','Save');
+                    LCmds(14,3,'Quit (AbortRG)','Save');
                     LCmds(14,3,'*Center line','!Memory Available');
                   END;
             '!' : Print('Heap space available: '+IntToStr(MemAvail));
@@ -440,7 +437,7 @@ BEGIN
                     PL;
                   END;
             'I' : BEGIN
-                    Abort := FALSE;
+                    AbortRG := FALSE;
                     Next := FALSE;
                     LastLineStr := '';
                     NL;
@@ -449,14 +446,14 @@ BEGIN
                       Print('^2   อออออออออออออออออออออออออออออออออออออออออออออออออ^1');
                     Dec(ThisUser.LineLen,6);
                     S := '';
-                    WHILE (S <> '.') AND (S <> '.'+#1) AND (NOT Abort) AND (NOT HangUp) DO
+                    WHILE (S <> '.') AND (S <> '.'+#1) AND (NOT AbortRG) AND (NOT HangUp) DO
                     BEGIN
                       Prompt(PadRightInt(CurLine,4)+': ');
                       InLi(S);
                       IF (S <> '.') AND (S <> '.'+#1) THEN
                       BEGIN
-                        Abort := NOT NewPtr(Nex);
-                        IF (Abort) THEN
+                        AbortRG := NOT NewPtr(Nex);
+                        IF (AbortRG) THEN
                           Print('Out of space.')
                         ELSE
                         BEGIN
@@ -501,11 +498,11 @@ BEGIN
                     Inc(ThisUser.LineLen,6);
                   END;
             'L' : BEGIN
-                    Abort := FALSE;
+                    AbortRG := FALSE;
                     Next := FALSE;
                     Nex := Cur;
                     I := CurLine;
-                    WHILE (Nex <> NIL) AND (NOT Abort) AND (NOT HangUp) DO
+                    WHILE (Nex <> NIL) AND (NOT AbortRG) AND (NOT HangUp) DO
                     BEGIN
                       PLine(I,Nex);
                       Nex := Nex^.Next;
@@ -568,4 +565,4 @@ BEGIN
   LastError := IOResult;
 END;
 
-END.
+END.

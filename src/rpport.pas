@@ -1,8 +1,4 @@
-{$IFNDEF MSDOS}
-{$IFNDEF UNIX}
-{$I DEFINES.INC}
-{$ENDIF}
-{$ENDIF}
+
 unit RPPort;
 
 interface
@@ -17,9 +13,6 @@ interface
 {$ENDIF}
 
 type
-  {$IFDEF FPC}
-    SmallWord = System.Word;
-  {$ENDIF}
   {$IFNDEF WIN32}
     TCharInfo = packed record
       Ch:   char;
@@ -38,7 +31,7 @@ type
 procedure RPFastWrite(ALine: String; AX, AY, AAttr: Byte);
 function RPGetAttrAt(AX, AY: Byte): Byte;
 function RPGetCharAt(AX, AY: Byte): Char;
-procedure RPGotoXY(xy: SmallWord);
+procedure RPGotoXY(xy: Word);
 procedure RPHideCursor;
 function RPLockFile(handle, start, length: longint): longint;
 procedure RPRestoreScreen(var screenBuf: TScreenBuf);
@@ -50,13 +43,13 @@ procedure RPSetCharAt(ACh: Char; AX, AY: Byte);
 procedure RPSleep(ms: word);
 procedure RPShowCursor;
 function RPUnLockFile(handle, start, length: longint): longint;
-function RPWhereXY: SmallWord;
+function RPWhereXY: Word;
 
 implementation
 
 {$IFDEF FPC}
   uses
-    Crt, SysUtils;
+    Crt, SysUtils, Classes;
 {$ENDIF}
 {$IFDEF VPASCAL}
   uses
@@ -311,7 +304,7 @@ end;
 {$ENDIF}
 
 // REENOTE Can't to platform specific since cursor position is stored internally in VP units
-procedure RPGotoXY(xy: SmallWord);
+procedure RPGotoXY(xy: Word);
 begin
   {$IFDEF VPASCAL}
     SysTVSetCurPos(xy and $00FF, xy and $FF00 shr 8);
@@ -394,7 +387,7 @@ end;
 {$IFDEF OS2}
 procedure RPRestoreScreen(var screenBuf: TScreenBuf);
 var
-  Size: SmallWord;
+  Size: Word;
 begin
   Size := SizeOf(TScreenBuf);
   VioWrtCellStr(@screenBuf, Size, 0, 0, 0);
@@ -454,7 +447,7 @@ end;
 {$IFDEF OS2}
 procedure RPSaveScreen(var screenBuf: TScreenBuf);
 var
-  Size: SmallWord;
+  Size: Word;
 begin
   Size := SizeOf(TScreenBuf);
   VioReadCellStr(screenBuf, Size, 0, 0, 0);
@@ -562,7 +555,7 @@ end;
 {$IFDEF WIN32}
 procedure RPSetAttrAt(AAttr, AX, AY: Byte);
 var
-  NumWritten: longint;
+  NumWritten: LongWord;
   WriteCoord: TCoord;
 begin
   WriteCoord.X := AX - 1;
@@ -770,9 +763,9 @@ begin
 end;
 
 // REENOTE Can't to platform specific since cursor position is stored internally in VP units
-function RPWhereXY: SmallWord;
+function RPWhereXY: Word;
 var
-  X, Y: SmallWord;
+  X, Y: Word;
 begin
   {$IFDEF VPASCAL}
     SysGetCurPos(X, Y);

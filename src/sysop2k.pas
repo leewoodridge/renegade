@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
 UNIT SysOp2K;
@@ -22,12 +18,12 @@ PROCEDURE DisplayArcs;
 VAR
   RecNumToList: Byte;
 BEGIN
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   PrintACR('^0 ##^4:^3Ext^4:^3Compression cmdline      ^4:^3Decompression cmdline    ^4:^3Success Code');
   PrintACR('^4 ==:===:=========================:=========================:============');
   RecNumToList := 1;
-  WHILE (RecNumToList <= NumArcs) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (RecNumToList <= NumArcs) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     WITH General.FileArcInfo[RecNumToList] DO
       PrintACR(AOnOff(Active,'^5+','^1-')+
@@ -143,7 +139,7 @@ VAR
       REPEAT
         IF (Cmd1 <> '?') THEN
         BEGIN
-          Abort := FALSE;
+          AbortRG := FALSE;
           Next := FALSE;
           CLS;
           IF (Editing) THEN
@@ -264,9 +260,9 @@ VAR
           CheckArchive(TempArchive1,1,2,Ok);
           IF (NOT OK) THEN
             IF (NOT PYNQ('%LFContinue inserting archive? ',0,TRUE)) THEN
-              Abort := TRUE;
-        UNTIL (OK) OR (Abort) OR (HangUp);
-        IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+              AbortRG := TRUE;
+        UNTIL (OK) OR (AbortRG) OR (HangUp);
+        IF (NOT AbortRG) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
         BEGIN
           Print('%LF[> Inserting archive record ...');
           IF (RecNumToInsertBefore <> (NumArcs + 1)) THEN

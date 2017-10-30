@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
 UNIT File8;
@@ -20,7 +16,7 @@ PROCEDURE Receive(FileName: Str12;
                   UploadPath: PathStr;
                   ResumeFile: Boolean;
                   VAR UploadOk,
-                  KeyboardAbort,
+                  KeyboardAbortRG,
                   AddULBatch: Boolean;
                   VAR TransferTime: LongInt);
 
@@ -333,11 +329,11 @@ TYPE
   END;
 VAR
   Totals: TotalsRecordType;
-  ReturnCode: SmallInt;
+  ReturnCode: Byte;
   ProtocolNumber: Integer;
   TransferTime: LongInt;
 BEGIN
-  Exclude(TransferFlags,IsKeyboardAbort);
+  Exclude(TransferFlags,IsKeyboardAbortRG);
 
   Exclude(TransferFlags,IsTransferOk);
 
@@ -353,8 +349,8 @@ BEGIN
   CASE ProtocolNumber OF
    -2 : BEGIN
           NL;
-          Print('^1Aborted!');
-          Include(TransferFlags,IsKeyboardAbort);
+          Print('^1AbortRGed!');
+          Include(TransferFlags,IsKeyboardAbortRG);
         END;
    -3 : BEGIN
           NL;
@@ -373,7 +369,7 @@ BEGIN
         NL;
         IF (NOT PYNQ('Continue to view selected file? ',0,FALSE)) THEN
         BEGIN
-          Include(TransferFlags,IsKeyboardAbort);
+          Include(TransferFlags,IsKeyboardAbortRG);
           Exit;
         END;
       END;
@@ -545,16 +541,16 @@ PROCEDURE Receive(FileName: Str12;
                   UploadPath: PathStr;
                   ResumeFile: Boolean;
                   VAR UploadOk,
-                  KeyboardAbort,
+                  KeyboardAbortRG,
                   AddULBatch: Boolean;
                   VAR TransferTime: LongInt);
 VAR
-  ReturnCode: SmallInt;
+  ReturnCode: Byte;
   ProtocolNumber: Integer;
 BEGIN
   UploadOk := TRUE;
 
-  KeyboardAbort := FALSE;
+  KeyboardAbortRG := FALSE;
 
   TransferTime := 0;
 
@@ -564,11 +560,11 @@ BEGIN
     -1 : UploadOk := FALSE;
     -2 : BEGIN
            UploadOk := FALSE;
-           KeyboardAbort := TRUE;
+           KeyboardAbortRG := TRUE;
          END;
     -3 : BEGIN
            UploadOk := FALSE;
-           KeyboardAbort := TRUE;
+           KeyboardAbortRG := TRUE;
          END;
     -4 : AddULBatch := TRUE;
     -5 : UploadOk := FALSE;
@@ -604,4 +600,4 @@ BEGIN
   END;
 END;
 
-END.
+END.

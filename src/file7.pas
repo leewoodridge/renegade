@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
 UNIT File7;
@@ -99,10 +95,10 @@ BEGIN
   SaveFileArea := FileArea;
   SaveTempPause := TempPause;
   TempPause := FALSE;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   FArea := 1;
-  WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
 
     LoadFileArea(FArea);

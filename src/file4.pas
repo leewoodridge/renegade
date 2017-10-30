@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
 UNIT File4;
@@ -15,8 +11,8 @@ PROCEDURE ExecProtocol(TextFN,
                        Dir,
                        BatLine: AStr;
                        OKLevel: Integer;
-                       VAR ReturnCode: SmallInt;
-                       VAR TransferTime: LongInt);
+                       Var ReturnCode: Byte;
+                       Var TransferTime: LongInt);
 FUNCTION FindReturnCode(ProtCode: ProtocolCodeType; XBStat: PRFlagSet; ReturnCode: AStr): Boolean;
 FUNCTION DoProtocol(VAR Protocol: ProtocolRecordType; UL,DL,Batch,Resume: Boolean): Integer;
 
@@ -48,8 +44,8 @@ PROCEDURE ExecProtocol(TextFN,
                        Dir,
                        BatLine: AStr;
                        OKLevel: Integer;
-                       VAR ReturnCode: SmallInt;
-                       VAR TransferTime: LongInt);
+                       Var ReturnCode: Byte;
+                       Var TransferTime: LongInt);
 VAR
   SaveSwapShell,
   ResultOk: Boolean;
@@ -67,7 +63,7 @@ BEGIN
   IF (TextFN <> '') THEN
   BEGIN
     AllowContinue := TRUE;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     CLS;
     UserColor(1);
@@ -157,11 +153,11 @@ BEGIN
     ELSE
       PrintF('PROTSDL');
   END;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   CmdStr := '';
   RecNum := 1;
-  WHILE (RecNum <= NumProtocols) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (RecNum <= NumProtocols) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     Seek(ProtocolFile,(RecNum - 1));
     Read(ProtocolFile,Protocol);
@@ -248,4 +244,4 @@ BEGIN
   DoProtocol := RecNum;
 END;
 
-END.
+END.

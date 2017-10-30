@@ -1,8 +1,39 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-{$MODE TP}
-{$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S-,V-,X-}
+{*******************************************************}
+{                                                       }
+{   Renegade BBS                                        }
+{                                                       }
+{   Copyright (c) 1990-2013 The Renegade Dev Team       }
+{   Copyleft  (ↄ) 2016 Renegade BBS                     }
+{                                                       }
+{   This file is part of Renegade BBS                   }
+{                                                       }
+{   Renegade is free software: you can redistribute it  }
+{   and/or modify it under the terms of the GNU General }
+{   Public License as published by the Free Software    }
+{   Foundation, either version 3 of the License, or     }
+{   (at your option) any later version.                 }
+{                                                       }
+{   Renegade is distributed in the hope that it will be }
+{   useful, but WITHOUT ANY WARRANTY; without even the  }
+{   implied warranty of MERCHANTABILITY or FITNESS FOR  }
+{   A PARTICULAR PURPOSE.  See the GNU General Public   }
+{   License for more details.                           }
+{                                                       }
+{   You should have received a copy of the GNU General  }
+{   Public License along with Renegade.  If not, see    }
+{   <http://www.gnu.org/licenses/>.                     }
+{                                                       }
+{*******************************************************}
+{   _______                                  __         }
+{  |   _   .-----.-----.-----.-----.---.-.--|  .-----.  }
+{  |.  l   |  -__|     |  -__|  _  |  _  |  _  |  -__|  }
+{  |.  _   |_____|__|__|_____|___  |___._|_____|_____|  }
+{  |:  |   |                 |_____|                    }
+{  |::.|:. |                                            }
+{  `--- ---'                                            }
+{*******************************************************}
+
+{$i Renegade.Common.Defines.inc}
 
 UNIT Common3;
 
@@ -12,7 +43,7 @@ USES
   Common;
 
 PROCEDURE InputDefault(VAR S: STRING; v: STRING; MaxLen: Byte; InputFlags: InputFlagSet; LineFeed: Boolean);
-PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
+PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; Format: STRING; AbortRGable: Boolean);
 PROCEDURE InputLongIntWC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt; VAR Changed: Boolean);
 PROCEDURE InputLongIntWOC(S: AStr; VAR L: LongInt; InputFlags: InputFlagSet; LowNum,HighNum: LongInt);
 PROCEDURE InputWordWC(S: AStr; VAR W: SmallWord; InputFlags: InputFlagSet; LowNum,HighNum: Word; VAR Changed: Boolean);
@@ -32,7 +63,8 @@ PROCEDURE InputCaps(VAR S: STRING; MaxLen: Byte);
 IMPLEMENTATION
 
 USES
-  Crt
+  Crt,
+  SysUtils
 {$IFDEF WIN32}
   ,RPScreen
 {$ENDIF}
@@ -77,7 +109,7 @@ BEGIN
 END;
 
 
-PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; Format: STRING; Abortable: Boolean);
+PROCEDURE InputFormatted(DisplayStr: AStr; VAR InputStr: STRING; Format: STRING; AbortRGable: Boolean);
 VAR
   c: Char;
   i,
@@ -126,7 +158,7 @@ BEGIN
         Dec(i);
       END;
     END;
-  UNTIL (HangUp) OR ((i > Length(Format)) OR (Abortable)) AND (c = #13);
+  UNTIL (HangUp) OR ((i > Length(Format)) OR (AbortRGable)) AND (c = #13);
   UserColor(1);
   NL;
 END;
@@ -312,7 +344,7 @@ END;
 PROCEDURE InputMain(VAR S: STRING; MaxLen: Byte; InputFlags: InputFlagSet);
 VAR
   SaveS: STRING;
-  Is: STRING[2];
+  IsX: STRING[2];
   Cp,
   Cl,
   Counter: Byte;
@@ -466,9 +498,9 @@ BEGIN
                 OutKey(Char(c));
                 IF (InsertMode) THEN
                 BEGIN
-                  Is := Char(c);
+                  IsX := Char(c);
                   MPrompt(Copy(S,Cp,255));
-                  Insert(Is,S,Cp);
+                  Insert(IsX,S,Cp);
                   FOR Counter := Cp TO Cl DO
                     Cursor_Left;
                 END
@@ -551,4 +583,4 @@ BEGIN
   InputMain(S,MaxLen,[CapWords]);
 END;
 
-END.
+END.

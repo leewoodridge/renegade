@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D+,E-,F+,I-,L+,N-,O-,R-,S+,V-}
 
@@ -84,7 +81,8 @@ USES
   TimeFunc,
   Vote,
   OneLiner,
-  Crt;
+  Crt,
+  SysUtils;
 
 
     (*
@@ -445,8 +443,8 @@ BEGIN
   IF ((ForcePause IN MemMenu.MenuFlags) AND (CurHelpLevel > 1) AND (LastCommandGood)) THEN
     PauseScr(FALSE);
   LastCommandGood := FALSE;
-  MenuAborted := FALSE;
-  Abort := FALSE;
+  MenuAbortRGed := FALSE;
+  AbortRG := FALSE;
 
   ShowThisMenu;
 
@@ -455,7 +453,7 @@ BEGIN
   IF (General.MultiNode) THEN
     Check_Status;
 
-  IF ((NOT (NoMenuPrompt IN MemMenu.MenuFlags)) AND (NOT MenuAborted)) AND NOT
+  IF ((NOT (NoMenuPrompt IN MemMenu.MenuFlags)) AND (NOT MenuAbortRGed)) AND NOT
      (OKAnsi AND (NoGenericAnsi IN MemMenu.MenuFlags) AND NOT (OkAvatar OR OKRIP)) AND NOT
      (OkAvatar AND (NoGenericAvatar IN MemMenu.MenuFlags) AND NOT OkRIP) AND NOT
      (OkRIP AND (NoGenericRIP IN MemMenu.MenuFlags)) THEN
@@ -591,7 +589,7 @@ BEGIN
   NewMenuToLoad := FALSE;
   NewMenuCmd := '';
   NoCmd := FALSE;
-  Abort := FALSE;
+  AbortRG := FALSE;
   LastCommandOvr := FALSE;
 
   IF ((Cmd[1] + Cmd[2]) <> 'NW') THEN
@@ -774,7 +772,7 @@ BEGIN
                   END;
             'R' : ReadAllMessages(MenuOption);
             'S' : BEGIN
-                    Abort := FALSE;
+                    AbortRG := FALSE;
                     Next := FALSE;
                     ScanMessages(MsgArea,FALSE,MenuOption);
                   END;
@@ -1074,4 +1072,4 @@ BEGIN
   END;
 END;
 
-END.
+END.

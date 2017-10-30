@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
 
@@ -28,7 +25,7 @@ VAR
   NS: NameStr;
   ES: ExtStr;
   AType: Byte;
-  ReturnCode: SmallInt;
+  ReturnCode: Byte;
   DirFileRecNum: Integer;
   OldSiz,
   NewSiz: LongInt;
@@ -41,7 +38,7 @@ BEGIN
     RecNo(FileInfo,FileName,DirFileRecNum);
     IF (BadDownloadPath) THEN
       Exit;
-    WHILE (DirFileRecNum <> -1) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (DirFileRecNum <> -1) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(FileInfoFile,DirFileRecNum);
       Read(FileInfoFile,FileInfo);
@@ -167,11 +164,13 @@ TYPE
   END;
 VAR
   TotalsRecord: TotalsRecordType;
-  FileName: Str12;
-  ReZipCmd: Str78;
+  FileName: ShortString; // Str12
+  ReZipCmd: ShortString; //Str78;
   FArea,
   SaveFileArea: Integer;
 BEGIN
+  SetLength(FileName, 12);
+  SetLength(ReZipCmd, 78);
   FillChar(TotalsRecord,SizeOf(TotalsRecord),0);
   NL;
   Print('Re-compress archives -');
@@ -183,7 +182,7 @@ BEGIN
   IF (FileName = '') THEN
   BEGIN
     NL;
-    Print('Aborted!');
+    Print('AbortRGed!');
     Exit;
   END;
   ReZipCmd := '';
@@ -198,7 +197,7 @@ BEGIN
     IF (ReZipCmd = '') THEN
     BEGIN
       NL;
-      Print('Aborted.');
+      Print('AbortRGed.');
       Exit;
     END;
   END;
@@ -206,7 +205,7 @@ BEGIN
   Print('Conversion process initiated: '+DateStr+' '+TimeStr+'.');
   SysOpLog('Conversion process initiated: '+DateStr+' '+TimeStr+'.');
   NL;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   IF NOT PYNQ('Search all file areas? ',0,FALSE) THEN
     CvtFiles(FileArea,FileName,ReZipCmd,TotalsRecord.TotalFiles,TotalsRecord.TotalOldSize,TotalsRecord.TotalNewSize)
@@ -214,7 +213,7 @@ BEGIN
   BEGIN
     SaveFileArea := FileArea;
     FArea := 1;
-    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       CvtFiles(FArea,FileName,ReZipCmd,TotalsRecord.TotalFiles,TotalsRecord.TotalOldSize,TotalsRecord.TotalNewSize);
       WKey;
@@ -241,4 +240,4 @@ BEGIN
            ConvertBytes(TotalsRecord.TotalOldSize,FALSE)+' , new size='+ConvertBytes(TotalsRecord.TotalNewSize,FALSE));
 END;
 
-END.
+END.

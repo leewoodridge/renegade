@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
@@ -78,7 +75,7 @@ VAR
 BEGIN
   IF (RecNumToList1 < 1) OR (RecNumToList1 > NumValKeys) THEN
     RecNumToList1 := 1;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   TempStr := '';
   NumOnline := 0;
@@ -88,7 +85,7 @@ BEGIN
   Reset(ValidationFile);
   NumDone := 0;
   WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumValKeys)
-        AND (NOT Abort) AND (NOT HangUp) DO
+        AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     Seek(ValidationFile,(RecNumToList1 - 1));
     Read(ValidationFile,Validation);
@@ -107,9 +104,9 @@ BEGIN
   END;
   Close(ValidationFile);
   LastError := IOResult;
-  IF (NumOnline = 1) AND (NOT Abort) AND (NOT HangUp) THEN
+  IF (NumOnline = 1) AND (NOT AbortRG) AND (NOT HangUp) THEN
     PrintaCR(TempStr);
-  IF (NumValKeys = 0) AND (NOT Abort) AND (NOT HangUp) THEN
+  IF (NumValKeys = 0) AND (NOT AbortRG) AND (NOT HangUp) THEN
     Print('^7No validation records.');
 END;
 
@@ -293,7 +290,7 @@ BEGIN
      (Copy(MenuOption,(Pos(';',MenuOption) + 1),1) = '') OR
      (Copy(MenuOption,1,(Pos(';',MenuOption) - 1)) = '') THEN
   BEGIN
-    Print('%LF^7Command error, operation aborted!^1');
+    Print('%LF^7Command error, operation AbortRGed!^1');
     SysOpLog('^7Auto-validation command error, invalid options!');
     Exit;
   END;
@@ -302,7 +299,7 @@ BEGIN
   Level := MenuOption[1];
   IF (NOT (Level IN ValKeys)) THEN
   BEGIN
-    Print('%LF^7Command error, operation aborted!^1');
+    Print('%LF^7Command error, operation AbortRGed!^1');
     SysOpLog('^7Auto-validation command error, level not found: '+Level+'!');
     Exit;
   END;
@@ -322,13 +319,13 @@ BEGIN
   IF (Validation.Expiration = 0) AND (Validation.ExpireTo <> ' ') OR
      (Validation.Expiration <> 0) AND (Validation.ExpireTo = ' ') THEN
   BEGIN
-    Print('%LF^7Command error, operation aborted!^1');
+    Print('%LF^7Command error, operation AbortRGed!^1');
     SysOpLog('^7Auto-validation command error, expiration data invalid: "'+Level+'"!');
     Exit;
   END
   ELSE IF (Validation.ExpireTo <> ' ') AND (NOT (Validation.ExpireTo IN ValKeys)) THEN
   BEGIN
-    Print('%LF^7Command error, operation aborted!^1');
+    Print('%LF^7Command error, operation AbortRGed!^1');
     SysOpLog('^7Auto-validation command error, expire to level "'+Validation.ExpireTo+'" does not exists!');
     Exit;
   END
@@ -346,12 +343,12 @@ BEGIN
     SysOpLog('User error, access would be lowered to level: "'+Level+'".');
     Exit;
   END;
-  Print('%LFPress <ENTER> to abort.');
+  Print('%LFPress <ENTER> to AbortRG.');
   Prt('%LFPassword: ');
   GetPassword(TempPW,20);
   IF (TempPW = '') THEN
   BEGIN
-    Print('%LFAborted.');
+    Print('%LFAbortRGed.');
     Exit;
   END;
   IF (TempPW <> PW) THEN
@@ -492,7 +489,7 @@ VAR
       REPEAT
         IF (Cmd1 <> '?') THEN
         BEGIN
-          Abort := FALSE;
+          AbortRG := FALSE;
           Next := FALSE;
           CLS;
           IF (Editing) THEN
@@ -713,9 +710,9 @@ VAR
             CheckValidationLevel(TempValidation1,1,1,Ok);
             IF (NOT OK) THEN
               IF (NOT PYNQ('%LFContinue inserting validation record? ',0,TRUE)) THEN
-                Abort := TRUE;
-          UNTIL (OK) OR (Abort) OR (HangUp);
-          IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+                AbortRG := TRUE;
+          UNTIL (OK) OR (AbortRG) OR (HangUp);
+          IF (NOT AbortRG) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
           BEGIN
             Include(ValKeys,Cmd1);
             Print('%LF[> Inserting validation record ...');

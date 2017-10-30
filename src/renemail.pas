@@ -12,7 +12,8 @@ PROGRAM ReneMail;
 USES
   Crt,
   Dos,
-  TimeFunc;
+  TimeFunc,
+  SysUtils;
 
 {$I RECORDS.PAS}
 
@@ -91,7 +92,7 @@ VAR
   Regs: Registers;
 {$ENDIF}
 
-  DirInfo: SearchRec;
+  DirInfo: TRawByteSearchRec;
 
   TempParamStr,
   StartDir: STRING;

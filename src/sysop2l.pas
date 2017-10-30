@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
 
 UNIT SysOp2L;
@@ -22,7 +18,7 @@ BEGIN
   REPEAT
     WITH General DO
     BEGIN
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
       CLS;
       Print('^5Credit System Configuration:');

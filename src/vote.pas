@@ -1,8 +1,39 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
+{*******************************************************}
+{                                                       }
+{   Renegade BBS                                        }
+{                                                       }
+{   Copyright (c) 1990-2013 The Renegade Dev Team       }
+{   Copyleft  (â†„) 2016 Renegade BBS                     }
+{                                                       }
+{   This file is part of Renegade BBS                   }
+{                                                       }
+{   Renegade is free software: you can redistribute it  }
+{   and/or modify it under the terms of the GNU General }
+{   Public License as published by the Free Software    }
+{   Foundation, either version 3 of the License, or     }
+{   (at your option) any later version.                 }
+{                                                       }
+{   Renegade is distributed in the hope that it will be }
+{   useful, but WITHOUT ANY WARRANTY; without even the  }
+{   implied warranty of MERCHANTABILITY or FITNESS FOR  }
+{   A PARTICULAR PURPOSE.  See the GNU General Public   }
+{   License for more details.                           }
+{                                                       }
+{   You should have received a copy of the GNU General  }
+{   Public License along with Renegade.  If not, see    }
+{   <http://www.gnu.org/licenses/>.                     }
+{                                                       }
+{*******************************************************}
+{   _______                                  __         }
+{  |   _   .-----.-----.-----.-----.---.-.--|  .-----.  }
+{  |.  l   |  -__|     |  -__|  _  |  _  |  _  |  -__|  }
+{  |.  _   |_____|__|__|_____|___  |___._|_____|_____|  }
+{  |:  |   |                 |_____|                    }
+{  |::.|:. |                                            }
+{  `--- ---'                                            }
+{*******************************************************}
 
-{$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
+{$i Renegade.Common.Defines.inc}
 
 UNIT Vote;
 
@@ -35,12 +66,12 @@ VAR
   NumTopics: Byte;
 BEGIN
   FillChar(AvailableTopics,SizeOf(AvailableTopics),0);
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   NumTopics := 0;
   Reset(VotingFile);
   TopicNum := 1;
-  WHILE (TopicNum <= NumVotes) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (TopicNum <= NumVotes) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     Seek(VotingFile,(TopicNum - 1));
     Read(VotingFile,Topic);
@@ -61,12 +92,12 @@ VAR
   TopicNum,
   NumTopics: Byte;
 BEGIN
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   NumTopics := 0;
   Reset(VotingFile);
   TopicNum := 1;
-  WHILE (TopicNum <= NumVotes) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (TopicNum <= NumVotes) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     Seek(VotingFile,(TopicNum - 1));
     Read(VotingFile,Topic);
@@ -92,19 +123,19 @@ BEGIN
     PauseScr(FALSE);
     Exit;
   END;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   (*
   CLS;
-  PrintACR('|03ÚÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿');
-  PrintACR('³|11|17 Num |03|16³|11|17Votes|03|16³|11|17 Choice                                   '+
-           '                       |03|16³');
-  PrintACR('ÀÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ');
+  PrintACR('|03ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿');
+  PrintACR('ï¿½|11|17 Num |03|16ï¿½|11|17Votes|03|16ï¿½|11|17 Choice                                   '+
+           '                       |03|16ï¿½');
+  PrintACR('ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½');
   *)
   lRGLngStr(61,FALSE);
   Reset(VotingFile);
   TopicNum := 1;
-  WHILE (TopicNum <= NumTopics) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (TopicNum <= NumTopics) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     Seek(VotingFile,(AvailableTopics[TopicNum] - 1));
     Read(VotingFile,Topic);
@@ -136,7 +167,7 @@ BEGIN
   Seek(VotingFile,(TopicNum - 1));
   Read(VotingFile,Topic);
   Close(VotingFile);
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   CLS;
   PrintACR('^5Topic: ^3'+Topic.Question1);
@@ -146,14 +177,14 @@ BEGIN
   PrintACR('^5Created By: ^3'+Topic.CreatedBy);
   NL;
   (*
-  PrintACR('|03ÚÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿');
-  PrintACR('³|11|17 N |03|16³|11|17  %  |03|16'+
-           '³|11|17 Choice                                                            |03|16³');
-  PrintACR('ÀÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ');
+  PrintACR('|03ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿');
+  PrintACR('ï¿½|11|17 N |03|16ï¿½|11|17  %  |03|16'+
+           'ï¿½|11|17 Choice                                                            |03|16ï¿½');
+  PrintACR('ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½');
   *)
   lRGLngStr(62,FALSE);
   ChoiceNum := 1;
-  WHILE (ChoiceNum <= Topic.ChoiceNumber) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (ChoiceNum <= Topic.ChoiceNumber) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     PrintACR('^3'+PadRightInt(Topic.Answers[ChoiceNum].NumVotedAnswer,4)+
              CTP(Topic.Answers[ChoiceNum].NumVotedAnswer,Topic.NumVotedQuestion)+
@@ -169,7 +200,7 @@ BEGIN
       Reset(UserFile);
       TempMaxUsers := (MaxUsers - 1);
       UNum := 1;
-      WHILE (UNum <= TempMaxUsers) AND (NumVoted > 0) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (UNum <= TempMaxUsers) AND (NumVoted > 0) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
         LoadURec(User,UNum);
         IF (User.Vote[TopicNum] = ChoiceNum) THEN
@@ -196,7 +227,7 @@ BEGIN
   Reset(VotingFile);
   Seek(VotingFile,(TopicNum - 1));
   Read(VotingFile,Topic);
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   CLS;
   Print('^5Renegade Voting:');
@@ -208,7 +239,7 @@ BEGIN
   PrintACR('^5Created by: ^3'+Topic.CreatedBy);
   NL;
   ChoiceNum := 1;
-  WHILE (ChoiceNum <= Topic.ChoiceNumber) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (ChoiceNum <= Topic.ChoiceNumber) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     PrintACR('^3'+PadRightInt(ChoiceNum,3)+'.^9 '+Topic.Answers[ChoiceNum].Answer1);
     IF (Topic.Answers[ChoiceNum].Answer2 <> '') THEN
@@ -287,7 +318,7 @@ BEGIN
   IF PYNQ('See results? ',0,TRUE) THEN
     TopicResults(TopicNum,ThisUser,FALSE);
   IF (InputStr = 'Q') THEN
-    Abort := TRUE;
+    AbortRG := TRUE;
   LastError := IOResult;
 END;
 
@@ -312,11 +343,11 @@ BEGIN
     PauseScr(FALSE);
     Exit;
   END;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   Found := FALSE;
   TopicNum := 1;
-  WHILE (TopicNum <= NumTopics) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (TopicNum <= NumTopics) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     IF (ThisUser.Vote[AvailableTopics[TopicNum]] = 0) THEN
     BEGIN
@@ -439,11 +470,11 @@ BEGIN
       PauseScr(FALSE);
       Exit;
     END;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     Found := FALSE;
     TopicNum := 1;
-    WHILE (TopicNum <= NumTopics) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (TopicNum <= NumTopics) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       IF (User.Vote[TopicNum] > 0) THEN
       BEGIN
@@ -477,7 +508,7 @@ BEGIN
   Print('^3Voting addition:');
   NL;
   Print('^9Now enter your topic.  You have up to two lines for your topic.');
-  Print('^9Press [Enter] on a blank line to leave blank or abort.');
+  Print('^9Press [Enter] on a blank line to leave blank or AbortRG.');
   NL;
   Prt('Topic: ');
   MPL(SizeOf(Topic.Question1) - 1);
@@ -503,17 +534,17 @@ BEGIN
       Print('choice. Press [Enter] on a blank first choice line to end.');
       NL;
       Topic.ChoiceNumber := 0;
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
       ChoiceNum := 0;
-      WHILE (ChoiceNum < 25) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (ChoiceNum < 25) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
         Inc(ChoiceNum);
         Prt('Choice '+PadRightInt(ChoiceNum,2)+': ');
         MPL(SizeOf(Topic.Answers[ChoiceNum].Answer1) - 1);
         InputWC(Topic.Answers[ChoiceNum].Answer1,SizeOf(Topic.Answers[ChoiceNum].Answer1) - 1);
         IF (Topic.Answers[ChoiceNum].Answer1 = '') THEN
-          Abort := TRUE
+          AbortRG := TRUE
         ELSE
         BEGIN
           Inc(Topic.ChoiceNumber);

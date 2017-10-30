@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
@@ -11,8 +8,8 @@ INTERFACE
 USES
   Common;
 
-PROCEDURE ShowUserInfo(DisplayType: Byte; UNum: Integer; CONST User: UserRecordType);
-PROCEDURE UserEditor(UNum: Integer);
+PROCEDURE ShowUserInfo(DisplayType: Byte; UNum: LongInt; Const User: UserRecordType);
+PROCEDURE UserEditor(UserNumber: LongInt);
 
 IMPLEMENTATION
 
@@ -26,10 +23,11 @@ USES
   TimeFunc,
   MiscUser;
 
-FUNCTION DisplayTerminalStr(StatusFlags: StatusFlagSet; Flags: FlagSet): Str8;
+FUNCTION DisplayTerminalStr(StatusFlags: StatusFlagSet; Flags: FlagSet): AnsiString;
 VAR
-  TempS: Str8;
+  TempS: AnsiString;
 BEGIN
+  SetLength(TempS, 8);
   IF (AutoDetect IN StatusFlags) THEN
     TempS := 'Auto'
   ELSE IF (RIP IN StatusFlags) THEN
@@ -45,7 +43,7 @@ BEGIN
   DisplayTerminalStr := PadLeftStr(TempS,8);
 END;
 
-PROCEDURE ShowUserInfo(DisplayType: Byte; UNum: Integer; CONST User: UserRecordType);
+PROCEDURE ShowUserInfo(DisplayType: Byte; UNum: LongInt; CONST User: UserRecordType);
 VAR
   Counter: Byte;
 
@@ -141,19 +139,19 @@ VAR
   END;
 
 BEGIN
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   CLS;
   Counter := 1;
   CASE DisplayType OF
-    1 : WHILE (Counter <= 19) AND (NOT Abort) AND (NOT HangUp) DO
+    1 : WHILE (Counter <= 19) AND (NOT AbortRG) AND (NOT HangUp) DO
           ShowUser(Counter);
-    2 : WHILE (Counter <= 5) AND (NOT Abort) AND (NOT HangUp) DO
+    2 : WHILE (Counter <= 5) AND (NOT AbortRG) AND (NOT HangUp) DO
           ShowUser(Counter);
   END;
 END;
 
-PROCEDURE UserEditor(UNum: Integer);
+PROCEDURE UserEditor(UserNumber: LongInt);
 TYPE
   F_StatusFlagsRec = (FS_Deleted,FS_Trapping,FS_ChatBuffer,FS_LockedOut,FS_Alert,FS_SLogging);
 CONST
@@ -187,14 +185,14 @@ CONST
   F_DLRatio2: LongInt = 2147483647;
 VAR
   User: UserRecordType;
-  TempStr: AStr;
+  TempStr: ShortString;
   Cmd: Char;
   TempB,
   Counter: Byte;
   UNum1,
   SaveUNum,
   TempMaxUsers,
-  RecNumToList: Integer;
+  RecNumToList: LongInt;
   Changed,
   Save,
   Save1,
@@ -252,10 +250,10 @@ VAR
   BEGIN
     Print('^5Search Criterea:^1');
     NL;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     Counter1 := 0;
-    WHILE ((Counter1 <= 14) AND (NOT Abort) AND (NOT HangUp)) DO
+    WHILE ((Counter1 <= 14) AND (NOT AbortRG) AND (NOT HangUp)) DO
     BEGIN
       CASE Counter1 OF
         0..9 :
@@ -297,7 +295,7 @@ VAR
     END;
   END;
 
-  FUNCTION OKUser(UNum1: Integer): Boolean;
+  FUNCTION OKUser(UNum1: LongInt): Boolean;
   VAR
     FSF: F_StatusFlagsRec;
     User1: UserRecordType;
@@ -396,22 +394,22 @@ VAR
     OKUser := Ok1;
   END;
 
-  PROCEDURE Search(i: Integer);
+  PROCEDURE Search(i: LongInt);
   VAR
     n,
-    TempMaxUsers: Integer;
+    TempMaxUsers: LongInt;
   BEGIN
     Prompt('Searching ... ');
     Reset(UserFile);
     TempMaxUsers := (MaxUsers - 1);
-    n := UNum;
+    n := UserNumber;
     REPEAT
-      Inc(UNum,i);
-      IF (UNum < 1) THEN
-        UNum := TempMaxUsers;
-      IF (UNum > TempMaxUsers) THEN
-        UNum := 1;
-    UNTIL ((OKUser(UNum)) OR (UNum = n));
+      Inc(UserNumber,i);
+      IF (UserNumber < 1) THEN
+        UserNumber := TempMaxUsers;
+      IF (UserNumber > TempMaxUsers) THEN
+        UserNumber := 1;
+    UNTIL ((OKUser(UserNumber)) OR (UserNumber = n));
     Close(UserFile);
   END;
 
@@ -451,11 +449,11 @@ VAR
   VAR
     User1: UserRecordType;
     FSF: F_StatusFlagsRec;
-    TempStr1: AStr;
+    TempStr1: ShortString;
     Cmd1: Char;
     SType,
     UNum1,
-    UserCount: Integer;
+    UserCount: LongInt;
     Changed1: Boolean;
   BEGIN
     DisplaySearchOptions;
@@ -489,6 +487,7 @@ VAR
       END;
       CASE Cmd1 OF
         '0' : BEGIN
+                SetLength(TempStr1, 40);
                 Print('General text ["'+F_GenText+'"]');
                 Prt(': ');
                 MPL(40);
@@ -497,6 +496,7 @@ VAR
                   F_GenText := TempStr1;
               END;
         '1' : BEGIN
+                SetLength(TempStr1, 20);
                 Print('Search ACS ["'+F_ACS+'"]');
                 Prt(': ');
                 MPL(20);
@@ -638,13 +638,13 @@ VAR
                 Cmd1 := #0;
               END;
         'U' : BEGIN
-                Abort := FALSE;
+                AbortRG := FALSE;
                 Next := FALSE;
                 Reset(UserFile);
                 UserCount := 0;
                 TempMaxUsers := (MaxUsers - 1);
                 UNum1 := 1;
-                WHILE (UNum1 <= TempMaxUsers) AND (NOT Abort) AND (NOT HangUp) DO
+                WHILE (UNum1 <= TempMaxUsers) AND (NOT AbortRG) AND (NOT HangUp) DO
                 BEGIN
                   IF (OKUser(UNum1)) THEN
                   BEGIN
@@ -655,7 +655,7 @@ VAR
                   Inc(UNum1);
                 END;
                 Close(UserFile);
-                IF (NOT Abort) THEN
+                IF (NOT AbortRG) THEN
                 BEGIN
                   NL;
                   Print('^7 ** ^5'+IntToStr(UserCount)+' Users.^1');
@@ -684,7 +684,9 @@ VAR
     FOR MsgNum := 1 TO HiMsg DO
     BEGIN
       LoadHeader(MsgNum,MHeader);
-      IF (NOT (MDeleted IN MHeader.Status)) AND ((MHeader.MTO.UserNum = UNum) OR (MHeader.From.UserNum = UNum)) THEN
+      IF (NOT (MDeleted IN MHeader.Status))
+      AND ((MHeader.MTO.UserNum = UserNumber)
+      OR (MHeader.From.UserNum = UserNumber)) THEN
       BEGIN
         Include(MHeader.Status,MDeleted);
         SaveHeader(MsgNum,MHeader);
@@ -895,23 +897,23 @@ VAR
   END;
 
 BEGIN
-  IF ((UNum < 1) OR (UNum > (MaxUsers - 1))) THEN
+  IF ((UserNumber < 1) OR (UserNumber > (MaxUsers - 1))) THEN
     Exit;
-  IF (UNum = UserNum) THEN
+  IF (UserNumber = UserNum) THEN
   BEGIN
     User := ThisUser;
-    SaveURec(User,UNum);
+    SaveURec(User,UserNumber);
   END;
-  LoadURec(User,UNum);
+  LoadURec(User,UserNumber);
   Clear_F;
   SaveUNum := 0;
   Save := FALSE;
   REPEAT
-    Abort := FALSE;
-    IF (AutoList) OR (UNum <> SaveUNum) OR (Cmd = ^M) THEN
+    AbortRG := FALSE;
+    IF (AutoList) OR (UserNumber <> SaveUNum) OR (Cmd = ^M) THEN
     BEGIN
-      ShowUserInfo(UserInfoTyp,UNum,User);
-      SaveUNum := UNum;
+      ShowUserInfo(UserInfoTyp,UserNumber,User);
+      SaveUNum := UserNumber;
     END;
     NL;
     Prt('User editor [^5?^4=^5Help^4]: ');
@@ -920,7 +922,7 @@ BEGIN
       NL;
     CASE Cmd OF
       '?' : BEGIN
-              Abort := FALSE;
+              AbortRG := FALSE;
               PrintACR('^5Editor Help');
               NL;
               LCmds3(21,3,';New list mode',':AutoList toggle','\Show sysop log');
@@ -937,23 +939,23 @@ BEGIN
             BEGIN
               IF (Save) THEN
               BEGIN
-                SaveURec(User,UNum);
-                IF (UNum = UserNum) THEN
+                SaveURec(User,UserNumber);
+                IF (UserNumber = UserNum) THEN
                   ThisUser := User;
                 Save := FALSE;
               END;
               CASE Cmd OF
                 '[' : BEGIN
-                        Dec(UNum);
-                        IF (UNum < 1) THEN
-                          UNum := (MaxUsers - 1);
+                        Dec(UserNumber);
+                        IF (UserNumber < 1) THEN
+                          UserNumber := (MaxUsers - 1);
                       END;
                 ']' : BEGIN
-                        Inc(UNum);
-                        IF (UNum > (MaxUsers - 1)) THEN
-                          UNum := 1;
+                        Inc(UserNumber);
+                        IF (UserNumber > (MaxUsers - 1)) THEN
+                          UserNumber := 1;
                       END;
-                '/' : UNum := 0;
+                '/' : UserNumber := 0;
                 '{' : Search(-1);
                 '}' : Search(1);
                 'U' : BEGIN
@@ -963,18 +965,18 @@ BEGIN
                         IF (UNum1 > 0) THEN
                         BEGIN
                           LoadURec(User,UNum1);
-                          UNum := UNum1;
+                          UserNumber := UNum1;
                         END;
                       END;
               END;
-              LoadURec(User,UNum);
-              IF (UNum = UserNum) THEN
+              LoadURec(User,UserNumber);
+              IF (UserNumber = UserNum) THEN
                 ThisUser := User;
             END;
       '=' : IF PYNQ('Reload old user data? ',0,FALSE) THEN
             BEGIN
-              LoadURec(User,UNum);
-              IF (UNum = UserNum) THEN
+              LoadURec(User,UserNumber);
+              IF (UserNumber = UserNum) THEN
                 ThisUser := User;
               Save := FALSE;
               Print('^7Old data reloaded.^1');
@@ -984,7 +986,7 @@ BEGIN
               CASE Cmd OF
                 'S' : UserSearch;
                 '-' : BEGIN
-                        ReadAsw(UNum,General.MiscPath+'NEWUSER');
+                        ReadAsw(UserNumber,General.MiscPath+'NEWUSER');
                         PauseScr(FALSE);
                       END;
                 '_' : BEGIN
@@ -992,7 +994,7 @@ BEGIN
                         MPL(8);
                         Input(TempStr,8);
                         NL;
-                        ReadAsw(UNum,General.MiscPath+TempStr);
+                        ReadAsw(UserNumber,General.MiscPath+TempStr);
                         PauseScr(FALSE);
                       END;
                 ';' : BEGIN
@@ -1006,7 +1008,7 @@ BEGIN
                       END;
                 ':' : AutoList := NOT AutoList;
                 '\' : BEGIN
-                        TempStr := General.LogsPath+'SLOG'+IntToStr(UNum)+'.LOG';
+                        TempStr := General.LogsPath+'SLOG'+IntToStr(UserNumber)+'.LOG';
                         PrintF(TempStr);
                         IF (NoFile) THEN
                           Print('"'+TempStr+'": File not found.');
@@ -1018,9 +1020,9 @@ BEGIN
       'N','O','P','R','T','V','W','X','Y','Z','1','2','3','4','5','^' :
             BEGIN
               IF (((ThisUser.SL <= User.SL) OR (ThisUser.DSL <= User.DSL)) AND
-                 (UserNum <> 1) AND (UserNum <> UNum)) THEN
+                 (UserNum <> 1) AND (UserNum <> UserNumber)) THEN
               BEGIN
-                SysOpLog('Tried to modify '+Caps(User.Name)+' #'+IntToStr(UNum));
+                SysOpLog('Tried to modify '+Caps(User.Name)+' #'+IntToStr(UserNumber));
                 Print('Access denied.');
                 NL;
                 PauseScr(FALSE);
@@ -1059,7 +1061,7 @@ BEGIN
                           UNTIL (Cmd = 'Q') OR (HangUp);
                           Cmd := #0;
                         END;
-                  '*' : AutoVal(User,UNum);
+                  '*' : AutoVal(User,UserNumber);
                   '+' : CStuff(15,3,User);
                   '1'..'5' :
                         ChangeRecords(Ord(Cmd) - 48);
@@ -1073,13 +1075,13 @@ BEGIN
                             MPL((SizeOf(ThisUser.Name) - 1));
                             Input(TempStr,(SizeOf(ThisUser.Name) - 1));
                             UNum1 := SearchUser(TempStr,TRUE);
-                            IF ((UNum1 = 0) OR (UNum1 = UNum)) AND (TempStr <> '') THEN
+                            IF ((UNum1 = 0) OR (UNum1 = UserNumber)) AND (TempStr <> '') THEN
                             BEGIN
-                              InsertIndex(User.Name,UNum,FALSE,TRUE);
+                              InsertIndex(User.Name, UserNumber, FALSE, TRUE);
                               User.Name := TempStr;
-                              InsertIndex(User.Name,UNum,FALSE,FALSE);
+                              InsertIndex(User.Name,UserNumber,FALSE,FALSE);
                               Save := TRUE;
-                              IF (UNum = UserNum) THEN
+                              IF (UserNumber = UserNum) THEN
                                 ThisUser.Name := TempStr;
                             END
                             ELSE
@@ -1091,8 +1093,8 @@ BEGIN
                           CStuff(10,3,User);
                           IF (User.RealName <> TempStr) THEN
                           BEGIN
-                            InsertIndex(TempStr,UNum,TRUE,TRUE);
-                            InsertIndex(User.RealName,UNum,TRUE,FALSE);
+                            InsertIndex(TempStr,UserNumber,TRUE,TRUE);
+                            InsertIndex(User.RealName,UserNumber,TRUE,FALSE);
                           END;
                         END;
                   'C' : CStuff(1,3,User);
@@ -1107,16 +1109,16 @@ BEGIN
                             NL;
                             Print('^11. Trapping status: '+AOnOff((TrapActivity IN User.SFlags),
                                                          '^7'+AOnOff((TrapSeparate IN User.SFlags),
-                                                         'Trapping to TRAP'+IntToStr(UNum)+'.LOG',
+                                                         'Trapping to TRAP'+IntToStr(UserNumber)+'.LOG',
                                                          'Trapping to TRAP.LOG'),
                                                          'Off')+AOnOff(General.globaltrap,'^8 <GLOBAL>',''));
                             Print('^12. Auto-chat state: '+AOnOff((ChatAuto IN User.SFlags),
                                                          AOnOff((ChatSeparate IN User.SFlags),
-                                                         '^7Output to CHAT'+IntToStr(UNum)+'.LOG',
+                                                         '^7Output to CHAT'+IntToStr(UserNumber)+'.LOG',
                                                          '^7Output to CHAT.LOG'),'Off')+
                                                          AOnOff(General.autochatopen,'^8 <GLOBAL>',''));
                             Print('^13. SysOp Log state: '+AOnOff((SLogSeparate IN User.SFlags),
-                                                         '^7Logging to SLOG'+IntToStr(UNum)+'.LOG',
+                                                         '^7Logging to SLOG'+IntToStr(UserNumber)+'.LOG',
                                                          '^3Normal output'));
                             Print('^14. Alert          : '+AOnOff((Alert IN User.Flags),
                                                          '^7Alert',
@@ -1182,7 +1184,7 @@ BEGIN
                             Ok := TRUE;
                             IF (TempB < ThisUser.SL) OR (UserNum = 1) THEN
                             BEGIN
-                              IF (UserNum = UNum) AND (TempB < ThisUser.SL) THEN
+                              IF (UserNum = UserNumber) AND (TempB < ThisUser.SL) THEN
                               BEGIN
                                 NL;
                                 IF NOT PYNQ('Lower your own SL level? ',0,FALSE) THEN
@@ -1198,7 +1200,7 @@ BEGIN
                             BEGIN
                               NL;
                               Print('Access denied.'^G);
-                              SysOpLog('Illegal SL edit attempt: '+Caps(User.Name)+' #'+IntToStr(UNum)+' to '+IntToStr(TempB));
+                              SysOpLog('Illegal SL edit attempt: '+Caps(User.Name)+' #'+IntToStr(UserNumber)+' to '+IntToStr(TempB));
                             END;
                           END;
                         END;
@@ -1210,7 +1212,7 @@ BEGIN
                             Ok := TRUE;
                             IF (TempB < ThisUser.DSL) OR (UserNum = 1) THEN
                             BEGIN
-                              IF (UserNum = UNum) AND (TempB < ThisUser.SL) THEN
+                              IF (UserNum = UserNumber) AND (TempB < ThisUser.SL) THEN
                               BEGIN
                                 NL;
                                 IF NOT PYNQ('Lower your own DSL level? ',0,FALSE) THEN
@@ -1223,7 +1225,7 @@ BEGIN
                             BEGIN
                               NL;
                               Print('Access denied.'^G);
-                              SysOpLog('Illegal DSL edit attempt: '+Caps(User.Name)+' #'+IntToStr(UNum)+
+                              SysOpLog('Illegal DSL edit attempt: '+Caps(User.Name)+' #'+IntToStr(UserNumber)+
                                        ' to '+IntToStr(TempB));
                             END;
                           END;
@@ -1240,7 +1242,7 @@ BEGIN
                               IF (NOT (Cmd IN ThisUser.AR)) AND (NOT SysOp) THEN
                               BEGIN
                                 Print('Access denied.'^G);
-                                SysOpLog('Tried to give '+Caps(User.Name)+' #'+IntToStr(UNum)+' AR flag "'+Cmd+'"');
+                                SysOpLog('Tried to give '+Caps(User.Name)+' #'+IntToStr(UserNumber)+' AR flag "'+Cmd+'"');
                               END
                               ELSE IF (Cmd IN ['A'..'Z']) THEN
                                 ToggleARFlag(Cmd,User.AR,Changed)
@@ -1266,7 +1268,7 @@ BEGIN
                               IF (Cmd = '4') AND (NOT SysOp) THEN
                               BEGIN
                                 Print('Access denied.'^G);
-                                SysOpLog('Tried to change '+Caps(User.Name)+' #'+IntToStr(UNum)+' deletion status');
+                                SysOpLog('Tried to change '+Caps(User.Name)+' #'+IntToStr(UserNumber)+' deletion status');
                               END
                               ELSE IF (Cmd <> ^M) THEN
                                 ToggleACFlags(Cmd,User.Flags,Changed);
@@ -1307,7 +1309,7 @@ BEGIN
                             ELSE
                             BEGIN
                               User.LockedFile := TempStr;
-                              SysOpLog('Locked '+Caps(User.Name)+' #'+IntToStr(UNum)+' out: Lockfile "'+TempStr+'"');
+                              SysOpLog('Locked '+Caps(User.Name)+' #'+IntToStr(UserNumber)+' out: Lockfile "'+TempStr+'"');
                             END;
                           END;
                           IF NOT (LockedOut IN User.SFlags) THEN
@@ -1354,8 +1356,8 @@ BEGIN
                           NL;
                           IF PYNQ('Restore this user? ',0,FALSE) THEN
                           BEGIN
-                            InsertIndex(User.Name,UNum,FALSE,FALSE);
-                            InsertIndex(User.RealName,UNum,TRUE,FALSE);
+                            InsertIndex(User.Name,UserNumber,FALSE,FALSE);
+                            InsertIndex(User.RealName,UserNumber,TRUE,FALSE);
                             Inc(LTodayNumUsers);
                             SaveGeneral(TRUE);
                             Exclude(User.SFlags,Deleted);
@@ -1366,7 +1368,7 @@ BEGIN
                         ELSE IF (FNoDeletion IN User.Flags) THEN
                         BEGIN
                           Print('Access denied - This user is protected from deletion.');
-                          SysOpLog('* Attempt to delete user: '+Caps(User.Name)+' #'+IntToStr(UNum));
+                          SysOpLog('* Attempt to delete user: '+Caps(User.Name)+' #'+IntToStr(UserNumber));
                           NL;
                           PauseScr(FALSE);
                           Save := Save1;
@@ -1380,13 +1382,13 @@ BEGIN
                             BEGIN
                               Save := TRUE;
                               Include(User.SFlags,Deleted);
-                              InsertIndex(User.Name,UNum,FALSE,TRUE);
-                              InsertIndex(User.RealName,UNum,TRUE,TRUE);
+                              InsertIndex(User.Name,UserNumber,FALSE,TRUE);
+                              InsertIndex(User.RealName,UserNumber,TRUE,TRUE);
                               Dec(LTodayNumUsers);
                               SaveGeneral(TRUE);
-                              SysOpLog('* Deleted User: '+Caps(User.Name)+' #'+IntToStr(UNum));
+                              SysOpLog('* Deleted User: '+Caps(User.Name)+' #'+IntToStr(UserNumber));
                               UNum1 := UserNum;
-                              UserNum := UNum;
+                              UserNum := UserNumber;
                               ReadShortMessage;
                               UserNum := UNum1;
                               User.Waiting := 0;
@@ -1403,7 +1405,7 @@ BEGIN
             END;
           END;
     END;
-    IF (UNum = UserNum) THEN
+    IF (UserNumber = UserNum) THEN
     BEGIN
       ThisUser := User;
       NewComptables;

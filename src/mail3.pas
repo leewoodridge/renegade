@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 {$MODE TP}
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
@@ -316,7 +313,7 @@ VAR
   NewMsgArea,
   SaveReadMsgArea: Integer;
   MArea,
-  NumMAreas: LongInt;
+  NumMAreas: SizeInt;
   TempTextSize: Word;
   SaveConfSystem: Boolean;
 BEGIN
@@ -474,4 +471,4 @@ BEGIN
   InitMsgArea(SaveReadMsgArea);
 END;
 
-END.
+END.

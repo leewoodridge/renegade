@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 {$MODE TP}
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
 
@@ -13,8 +10,8 @@ USES
 
 PROCEDURE ToggleNetAttr(NetAttrT: NetAttr; VAR NetAttrS: NetAttribs);
 PROCEDURE ToggleNetAttrs(C: CHAR; VAR NetAttrS: NetAttribs);
-FUNCTION GetNewAddr(DisplayStr: AStr; MaxLen: Byte; VAR Zone,Net,Node,Point: SmallWord): Boolean;
-PROCEDURE GetNetAddress(VAR SysOpName: AStr; VAR Zone,Net,Node,Point: SmallWord; var Fee: Word; GetFee: Boolean);
+FUNCTION GetNewAddr(DisplayStr: ShortString; MaxLen: Byte; VAR Zone,Net,Node,Point: SmallWord): Boolean;
+PROCEDURE GetNetAddress(VAR SysOpName: ShortString; VAR Zone,Net,Node,Point: SmallWord; var Fee: Word; GetFee: Boolean);
 PROCEDURE ChangeFlags(VAR MsgHeader: MHeaderRec);
 FUNCTION NetMail_Attr(NetAttribute: NetAttribs): AStr;
 
@@ -107,7 +104,7 @@ BEGIN
   END;
 END;
 
-FUNCTION GetNewAddr(DisplayStr: AStr; MaxLen: Byte; VAR Zone,Net,Node,Point: SmallWord): Boolean;
+FUNCTION GetNewAddr(DisplayStr: ShortString; MaxLen: Byte; VAR Zone,Net,Node,Point: SmallWord): Boolean;
 BEGIN
   GetNewAddr := FALSE;
   Prt(DisplayStr);
@@ -209,11 +206,11 @@ BEGIN
   Compaddress := K;
 END;
 
-PROCEDURE GetNetAddress(VAR SysOpName: AStr; VAR Zone,Net,Node,Point: SmallWord; var Fee: Word; GetFee: Boolean);
+PROCEDURE GetNetAddress(VAR SysOpName: ShortString; VAR Zone,Net,Node,Point: SmallWord; var Fee: Word; GetFee: Boolean);
 VAR
   DataFile,
   NDXFile: FILE;
-  s: STRING[36];
+  s: ShortString; //STRING[36];
   Location: LongInt;
   Dat: DatRec;
   Internet: Boolean;
@@ -450,7 +447,7 @@ VAR
     BTree := FRec;
   END;
 
-  FUNCTION Pull(VAR S: STRING; C: Char): STRING;
+  FUNCTION Pull(VAR S: ShortString; C: Char): STRING;
   VAR
     I: Byte;
   BEGIN
@@ -460,6 +457,7 @@ VAR
   END;
 
 BEGIN
+  SetLength(s, 36);
   NL;
   Internet := FALSE;
   IF NOT Exist(General.NodePath+'NODEX.DAT') OR
@@ -649,4 +647,4 @@ BEGIN
   NL;
 END;
 
-END.
+END.

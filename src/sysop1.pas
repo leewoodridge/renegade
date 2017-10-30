@@ -1,8 +1,39 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
+{*******************************************************}
+{                                                       }
+{   Renegade BBS                                        }
+{                                                       }
+{   Copyright (c) 1990-2013 The Renegade Dev Team       }
+{   Copyleft  (ↄ) 2016 Renegade BBS                     }
+{                                                       }
+{   This file is part of Renegade BBS                   }
+{                                                       }
+{   Renegade is free software: you can redistribute it  }
+{   and/or modify it under the terms of the GNU General }
+{   Public License as published by the Free Software    }
+{   Foundation, either version 3 of the License, or     }
+{   (at your option) any later version.                 }
+{                                                       }
+{   Renegade is distributed in the hope that it will be }
+{   useful, but WITHOUT ANY WARRANTY; without even the  }
+{   implied warranty of MERCHANTABILITY or FITNESS FOR  }
+{   A PARTICULAR PURPOSE.  See the GNU General Public   }
+{   License for more details.                           }
+{                                                       }
+{   You should have received a copy of the GNU General  }
+{   Public License along with Renegade.  If not, see    }
+{   <http://www.gnu.org/licenses/>.                     }
+{                                                       }
+{*******************************************************}
+{   _______                                  __         }
+{  |   _   .-----.-----.-----.-----.---.-.--|  .-----.  }
+{  |.  l   |  -__|     |  -__|  _  |  _  |  _  |  -__|  }
+{  |.  _   |_____|__|__|_____|___  |___._|_____|_____|  }
+{  |:  |   |                 |_____|                    }
+{  |::.|:. |                                            }
+{  `--- ---'                                            }
+{*******************************************************}
 
-{$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
+{$i Renegade.Common.Defines.inc}
 
 UNIT SysOp1;
 
@@ -256,7 +287,7 @@ VAR
         IF (Cmd1 <> '?') THEN
         BEGIN
           MCIAllowed := FALSE;
-          Abort := FALSE;
+          AbortRG := FALSE;
           Next := FALSE;
           CLS;
           IF (Editing) THEN
@@ -630,9 +661,9 @@ VAR
           CheckProtocol(TempProtocol1,1,14,Ok);
           IF (NOT OK) THEN
             IF (NOT PYNQ('%LFContinue inserting protocol? ',0,TRUE)) THEN
-              Abort := TRUE;
-        UNTIL (OK) OR (Abort) OR (HangUp);
-        IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+              AbortRG := TRUE;
+        UNTIL (OK) OR (AbortRG) OR (HangUp);
+        IF (NOT AbortRG) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
         BEGIN
           Print('%LF[> Inserting protocol record ...');
           Seek(ProtocolFile,FileSize(ProtocolFile));
@@ -771,7 +802,7 @@ VAR
   BEGIN
     IF (RecNumToList1 < 1) OR (RecNumToList1 > NumProtocols) THEN
       RecNumToList1 := 1;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     CLS;
     PrintACR('^0 ###^4:^3ACS       ^4:^3Description');
@@ -779,7 +810,7 @@ VAR
     Reset(ProtocolFile);
     NumDone := 0;
     WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumProtocols)
-          AND (NOT Abort) AND (NOT HangUp) DO
+          AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(ProtocolFile,(RecNumToList1 - 1));
       Read(ProtocolFile,Protocol);

@@ -1,8 +1,39 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
+{*******************************************************}
+{                                                       }
+{   Renegade BBS                                        }
+{                                                       }
+{   Copyright (c) 1990-2013 The Renegade Dev Team       }
+{   Copyleft  (ↄ) 2016 Renegade BBS                     }
+{                                                       }
+{   This file is part of Renegade BBS                   }
+{                                                       }
+{   Renegade is free software: you can redistribute it  }
+{   and/or modify it under the terms of the GNU General }
+{   Public License as published by the Free Software    }
+{   Foundation, either version 3 of the License, or     }
+{   (at your option) any later version.                 }
+{                                                       }
+{   Renegade is distributed in the hope that it will be }
+{   useful, but WITHOUT ANY WARRANTY; without even the  }
+{   implied warranty of MERCHANTABILITY or FITNESS FOR  }
+{   A PARTICULAR PURPOSE.  See the GNU General Public   }
+{   License for more details.                           }
+{                                                       }
+{   You should have received a copy of the GNU General  }
+{   Public License along with Renegade.  If not, see    }
+{   <http://www.gnu.org/licenses/>.                     }
+{                                                       }
+{*******************************************************}
+{   _______                                  __         }
+{  |   _   .-----.-----.-----.-----.---.-.--|  .-----.  }
+{  |.  l   |  -__|     |  -__|  _  |  _  |  _  |  -__|  }
+{  |.  _   |_____|__|__|_____|___  |___._|_____|_____|  }
+{  |:  |   |                 |_____|                    }
+{  |::.|:. |                                            }
+{  `--- ---'                                            }
+{*******************************************************}
 
-{$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
+{$i Renegade.Common.Defines.inc}
 
 UNIT CUser;
 
@@ -48,9 +79,10 @@ VAR
 
   PROCEDURE ConfigureQWK;
   VAR
-    ArcExt: Str3;
+    ArcExt: ShortString; //Str3;
     AType: Byte;
   BEGIN
+    SetLength(ArcExt, 3);
     IF (User.DefArcType < 1) OR (User.DefArcType > MaxArcs) THEN
       User.DefArcType := 1;
     Print('Current archive type: ^5'+General.FileArcInfo[User.DefArcType].Ext);
@@ -84,8 +116,9 @@ VAR
 
   PROCEDURE DoAddress;
   VAR
-    TempStreet: Str30;
+    TempStreet: ShortString; //Str30;
   BEGIN
+    SetLength(TempStreet, 30);
     Print('Enter your street address:');
     Prt(': ');
     MPL((SizeOf(User.Street) - 1));
@@ -104,13 +137,14 @@ VAR
 
   PROCEDURE DoAge;
   VAR
-    TempDate: Str10;
+    TempDate: ShortString; // Str10;
     TempDay,
     TempMonth,
     TempYear,
     CurYear: Word;
     Redo: Boolean;
   BEGIN
+    SetLength(TempDate, 10);
     GetYear(CurYear);
     IF (How = 1) AND (IEMSIRec.BDate <> '') THEN
     BEGIN
@@ -163,9 +197,12 @@ VAR
   PROCEDURE DoCityState;
   VAR
     s,
-    s1,
-    s2: AStr;
+    s1,  // Str2
+    s2 : ShortString; // Str26
   BEGIN
+    SetLength(s, SizeOf(User.CityState) - 1);
+    SetLength(s1, 2);
+    SetLength(s2, 26);
     CASE How OF
       2 : FindArea;
       3 : CallFromArea := 1;
@@ -234,8 +271,9 @@ VAR
   PROCEDURE DoUserDef(QuestionNum: Byte);
   VAR
     UserDefQues: STRING[80];
-    s: Str35;
+    s: ShortString; //Str35;
   BEGIN
+    SetLength(s, 35);
     CASE QuestionNum OF
       1 : UserDefQues := lRGLngStr(38,TRUE); {'Is ALL of your information REAL & CORRECT? (Yes/No)'}
       2 : UserDefQues := lRGLngStr(39,TRUE); {'Do you run a Telnet BBS? (If so, type in address below)'}
@@ -261,11 +299,12 @@ VAR
   PROCEDURE DoName;
   VAR
     TextFile: Text;
-    s,
+    s : ShortString;
     s1,
     s2: AStr;
     UNum: Integer;
   BEGIN
+    SetLength(s, SizeOf(User.Name) -1);
     IF (How = 1) THEN
       IF (General.AllowAlias) AND (IEMSIRec.Handle <> '') THEN
       BEGIN
@@ -294,7 +333,7 @@ VAR
     WHILE (s[1] IN [' ','0'..'9']) AND (Length(s) > 0) do
       Delete(s,1,1);
     WHILE (s[Length(s)] = ' ') do
-      Dec(s[0]);
+      Dec(s[2]);
     IF ((Pos(' ',s) = 0) AND (How <> 3) AND NOT (General.AllowAlias)) THEN
     BEGIN
       NL;
@@ -361,8 +400,9 @@ VAR
 
   PROCEDURE DoPhone;
   VAR
-    TempPhone: AStr;
+    TempPhone: ShortString;
   BEGIN
+    SetLength(TempPhone, 12);
     CASE How OF
       1 : BEGIN
             IF (IEMSIRec.Ph <> '') THEN
@@ -484,8 +524,9 @@ VAR
 
   PROCEDURE DoForgotPW;
   VAR
-    s: AStr;
+    s: ShortString;
   BEGIN
+    SetLength(s, 40);
     IF (How IN [1..2]) THEN
     BEGIN
       REPEAT
@@ -504,9 +545,10 @@ VAR
 
   PROCEDURE DoRealName;
   VAR
-    TempRealName: AStr;
+    TempRealName: ShortString;
     UNum: Integer;
   BEGIN
+    SetLength(TempRealName, SizeOf(User.RealName) -1);
     IF (How = 1) THEN
       IF (NOT General.AllowAlias) THEN
       BEGIN
@@ -526,10 +568,10 @@ VAR
       InputL(TempRealName,(SizeOf(User.RealName) - 1))
     ELSE
       InputCaps(TempRealName,(SizeOf(User.RealName) - 1));
-    WHILE (TempRealName[1] IN [' ','0'..'9']) AND (Length(TempRealName) > 0) do
+    WHILE (TempRealName[2] IN [' ','0'..'9']) AND (Length(TempRealName) > 0) do
       Delete(TempRealName,1,1);
     WHILE (TempRealName[Length(TempRealName)] = ' ') do
-      Dec(TempRealName[0]);
+      Dec(TempRealName[1]);
     IF (Pos(' ',TempRealName) = 0) AND (How <> 3) THEN
     BEGIN
       NL;
@@ -591,8 +633,9 @@ VAR
 
   PROCEDURE DoZIPCode;
   VAR
-    TempZipCode: Str10;
+    TempZipCode: ShortString; //Str10;
   BEGIN
+    SetLength(TempZipCode, 10);
     IF (How = 3) THEN
     BEGIN
       FindArea;
@@ -632,7 +675,7 @@ VAR
   PROCEDURE ForwardMail;
   VAR
     User1: UserRecordType;
-    Unum: Integer;
+    Unum: LongInt;
   BEGIN
     NL;
     Print('^5If you forward your mail, all email sent to your account^1');
@@ -900,14 +943,14 @@ VAR
   BEGIN
     Reset(SchemeFile);
     CLS;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     PrintACR('Available Color schemes:');
     NL;
     i := 1;
     Onlin := 0;
     Seek(SchemeFile,0);
-    WHILE (FilePos(SchemeFile) < FileSize(SchemeFile)) AND (NOT Abort) AND (NOT HangUp) do
+    WHILE (FilePos(SchemeFile) < FileSize(SchemeFile)) AND (NOT AbortRG) AND (NOT HangUp) do
     BEGIN
       Read(SchemeFile,AScheme);
       Inc(Onlin);
@@ -920,7 +963,7 @@ VAR
       WKey;
       Inc(i);
     END;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     NL;
     InputIntegerWOC('%LFSelect a color scheme',i,[NumbersOnly],1,FileSize(SchemeFile));
@@ -1021,9 +1064,9 @@ BEGIN
         BEGIN
           WW(Which);
           IF (NOT Done1) THEN
-            Print('Function aborted!');
+            Print('Function AbortRGed!');
         END;
   END;
 END;
 
-END.
+END.

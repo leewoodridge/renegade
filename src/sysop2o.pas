@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
 
 UNIT SysOp2O;
@@ -31,7 +27,7 @@ VAR
     Counter1: Byte;
     SecNum: Integer;
   BEGIN
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     LineNum := 0;
     REPEAT
@@ -48,11 +44,11 @@ VAR
       END;
       PrintACR(TempStr);
       Inc(LineNum);
-    UNTIL (LineNum > 19) OR (Abort) OR (HangUp);
+    UNTIL (LineNum > 19) OR (AbortRG) OR (HangUp);
   END;
 
 BEGIN
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   DisplayValue := 0;
   REPEAT

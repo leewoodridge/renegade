@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
 UNIT SysOp8;
@@ -332,7 +328,7 @@ VAR
         IF (Cmd1 <> '?') THEN
         BEGIN
           MCIAllowed := FALSE;
-          Abort := FALSE;
+          AbortRG := FALSE;
           Next := FALSE;
           CLS;
           IF (RecNumToEdit = -1) THEN
@@ -730,9 +726,9 @@ VAR
           CheckMessageArea(TempMemMsgArea1,1,5,Ok);
           IF (NOT OK) THEN
             IF (NOT PYNQ('%LFContinue inserting message area? ',0,TRUE)) THEN
-              Abort := TRUE;
-        UNTIL (OK) OR (Abort) OR (HangUp);
-        IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+              AbortRG := TRUE;
+        UNTIL (OK) OR (AbortRG) OR (HangUp);
+        IF (NOT AbortRG) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
         BEGIN
           Print('%LF[> Inserting message area record ...');
           Seek(MsgAreaFile,FileSize(MsgAreaFile));
@@ -1027,7 +1023,7 @@ VAR
     IF (RecNumToList1 < 0) OR (RecNumToList1 > NumMsgAreas) THEN
       RecNumToList1 := 0;
     MCIAllowed := FALSE;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     CLS;
     CASE DisplayType OF
@@ -1057,7 +1053,7 @@ VAR
     Reset(MsgAreaFile);
     NumDone := 1;
     WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumMsgAreas)
-          AND (NOT Abort) AND (NOT HangUp) DO
+          AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(MsgAreaFile,(RecNumToList1 - 1));
       Read(MsgAreaFile,MemMsgArea);

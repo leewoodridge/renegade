@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
 UNIT SysOp2J;
@@ -120,7 +116,7 @@ VAR
     NewColor: Byte;
   BEGIN
     REPEAT
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
       FileAreaNameDisplayed := FALSE;
       DisplayFileAreaHeader;
@@ -183,15 +179,16 @@ VAR
     NewColor: Byte;
   BEGIN
     REPEAT
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
       CLS; { starts at color 28 }
-      PrintACR('ÚÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄ¿');
-      PrintACR('³ Msg# ³ Sender            ³ Receiver           ³  '+
-               'Subject           ³! Posted ³');
+(*      PrintACR('ÚÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄ¿');
+      PrintACR('? Msg# ? Sender            ? Receiver           ?  '+
+               'Subject           ?! Posted ?);
       PrintACR('ÀÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÙ');
       PrintACR('''* "2#      Exodus              $Nuclear              %Re: Renegade       &01/01/93');
       PrintACR('''> "3#      Nuclear             $Exodus               %RG Update          &01/01/93');
+      *)
       NL;
       LCmds3(20,3,'A Border','B Msg Num field','C Sender Field');
       LCmds3(20,3,'D Receiver field','E Subject Field','F Date field');
@@ -223,7 +220,7 @@ VAR
     IF (SaveConfSystem) THEN
       NewCompTables;
     REPEAT
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
       Farea := 1;
       NumFAreas := 0;
@@ -255,7 +252,7 @@ VAR
     NumMAreas: Integer;
   BEGIN
     REPEAT
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
       MArea := 1;
       NumMAreas := 0;
@@ -281,19 +278,20 @@ VAR
     NewColor: Byte;
   BEGIN
     REPEAT
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
       CLS;  { starts at 115 }
       Print(Centre('|The QWKÿSystem is now gathering mail.'));
       NL;
-      PrintACR('sÚÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄ¿');
-      PrintACR('s³t Num s³u Message base name     s³v  Short  s³w Echo s³x  Total  '+
-               's³y New s³z Your s³{ Size s³');
+(*      PrintACR('sÚÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄ¿');
+      PrintACR('s?t Num s?u Message base name     s?v  Short  s?w Echo s?x  Total  '+
+               's?y New s?z Your s?{ Size s?);
       PrintACR('sÀÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÙ');
       PrintACR('   }1    ~General                 GENERAL    €No      530     ‚328    ƒ13    „103k');
       PrintACR('   }2    ~Not so general          NSGEN      €No      854     ‚ 86    ƒ15     „43k');
       PrintACR('   }3    ~Vague                   VAGUE      €No      985     ‚148     ƒ8     „74k');
-      NL;
+*)
+NL;
       LCmds3(20,3,'A Border','B Base num field','C Base name field');
       LCmds3(20,3,'D Short field','E Echo field','F Total field');
       LCmds3(20,3,'G New field','H Your field','I Size field');
@@ -325,15 +323,15 @@ VAR
     NewColor: Byte;
   BEGIN
     REPEAT
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
       CLS;   { starts at 135 }
-      PrintACR('‡ÚÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿');
-      PrintACR('‡³ˆ Num ‡³‰ Date/Time         ‡³Š Sender                 ‡³‹ Subject                  ‡³');
-      PrintACR('‡ÀÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ');
+(*      PrintACR('‡ÚÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?);
+      PrintACR('‡?ˆ Num ‡?‰ Date/Time         ‡?Š Sender                 ‡?‹ Subject                  ‡?);
+      PrintACR('‡ÀÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?);
       PrintACR('    Œ1  01 Jan 1993  01:00a Exodus                   Renegade');
       PrintACR('    Œ1  01 Jan 1993  01:00a Nuclear                  Upgrades');
-      NL;
+*)      NL;
       LCmds3(20,3,'A Border','B Number field','C Date/Time field');
       LCmds(20,3,'D Sender field','E Subject field');
       NL;
@@ -459,7 +457,7 @@ VAR
       REPEAT
         IF (Cmd1 <> '?') THEN
         BEGIN
-          Abort := FALSE;
+          AbortRG := FALSE;
           Next := FALSE;
           CLS;
           IF (Editing) THEN
@@ -577,9 +575,9 @@ VAR
           CheckScheme(TempScheme1,1,1,Ok);
           IF (NOT OK) THEN
             IF (NOT PYNQ('%LFContinue inserting color scheme? ',0,TRUE)) THEN
-              Abort := TRUE;
-        UNTIL (OK) OR (Abort) OR (HangUp);
-        IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+              AbortRG := TRUE;
+        UNTIL (OK) OR (AbortRG) OR (HangUp);
+        IF (NOT AbortRG) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
         BEGIN
           Print('%LF[> Inserting color scheme record ...');
           Seek(SchemeFile,FileSize(SchemeFile));
@@ -757,7 +755,7 @@ VAR
   BEGIN
     IF (RecNumToList1 < 1) OR (RecNumToList1 > NumSchemes) THEN
       RecNumToList1 := 1;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     CLS;
     PrintACR('^0###^4:^3'+PadLeftStr('Description',30)+'^4:^3Colors');
@@ -765,7 +763,7 @@ VAR
     Reset(SchemeFile);
     NumDone := 0;
     WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumSchemes)
-          AND (NOT Abort) AND (NOT HangUp) DO
+          AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(SchemeFile,(RecNumToList1 - 1));
       Read(SchemeFile,Scheme);
@@ -820,4 +818,4 @@ BEGIN
   LastError := IOResult;
 END;
 
-END.
+END.

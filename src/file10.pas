@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
@@ -157,8 +154,8 @@ BEGIN
       IF (InputStr = 'Q') THEN
       BEGIN
         NL;
-        Print('Aborted.');
-        Abort := TRUE
+        Print('AbortRGed.');
+        AbortRG := TRUE
       END
       ELSE IF (StrToInt(InputStr) >= 0) AND (StrToInt(InputStr) <= 999) THEN
       BEGIN
@@ -200,18 +197,18 @@ BEGIN
   END;
   DontShowList := FALSE;
   REPEAT
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     IF (NOT DontShowList) THEN
     BEGIN
       NL;
       DisplayFileInfo(FileInfo,TRUE);
-      Abort := FALSE;
+      AbortRG := FALSE;
     END
     ELSE
       DontShowList := FALSE;
     NL;
-    Abort := FALSE;
+    AbortRG := FALSE;
     IF (Next) THEN
       Cmd := 'N'
     ELSE
@@ -228,7 +225,7 @@ BEGIN
               IF (InputStr = '') THEN
               BEGIN
                 NL;
-                Print('Aborted.');
+                Print('AbortRGed.');
               END
               ELSE IF (SQOutSp(InputStr) = SQOutSp(FileInfo.FileName)) THEN
               BEGIN
@@ -359,7 +356,7 @@ BEGIN
               IF (InputStr = '') THEN
               BEGIN
                 NL;
-                Print('Aborted.');
+                Print('AbortRGed.');
               END
               ELSE
               BEGIN
@@ -513,7 +510,7 @@ BEGIN
                   ToggleFIFlags('T',FileInfo.FIFlagS);
                 END;
               END;
-              Abort := FALSE;
+              AbortRG := FALSE;
             END;
       'M' : BEGIN
               SaveFileArea := FileArea;
@@ -672,7 +669,7 @@ BEGIN
               LoadFileArea(FileArea);
             END;
       'P' : ;
-      'Q' : Abort := TRUE;
+      'Q' : AbortRG := TRUE;
       'R' : ToggleFIFlags('R',FileInfo.FIFlagS);
       'T' : ToggleFIFlags('T',FileInfo.FIFlagS);
       'U' : IF (NOT CoSysOp) THEN
@@ -731,7 +728,7 @@ BEGIN
       Seek(FileInfoFile,DirFileRecNum);
       Write(FileInfoFile,FileInfo);
     END;
-  UNTIL (Cmd IN ['P','N','Q']) OR (Abort) OR (Next) OR (HangUp);
+  UNTIL (Cmd IN ['P','N','Q']) OR (AbortRG) OR (Next) OR (HangUp);
 END;
 
 PROCEDURE EditFiles;
@@ -753,7 +750,7 @@ BEGIN
   IF (FileName = '') OR (Pos('.',FileName) = 0) THEN
   BEGIN
     NL;
-    Print('Aborted.');
+    Print('AbortRGed.');
   END
   ELSE
   BEGIN
@@ -775,13 +772,13 @@ BEGIN
     END
     ELSE
     BEGIN
-      Abort := FALSE;
+      AbortRG := FALSE;
       Next := FALSE;
-      WHILE (DirFileRecNum <> -1) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (DirFileRecNum <> -1) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
         EditFile(DirFileRecNum,Cmd,FALSE,FALSE);
         IF (Cmd = 'Q') THEN
-          Abort := TRUE
+          AbortRG := TRUE
         ELSE
         BEGIN
           IF (Cmd = 'P') THEN
@@ -829,7 +826,7 @@ VAR
       Found := FALSE;
       FirstOne := TRUE;
       Prompt('^1Scanning ^5'+MemFileArea.AreaName+' #'+IntToStr(CompFileArea(FileArea,0))+'^1 ...');
-      WHILE (DirFileRecNum <> -1) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (DirFileRecNum <> -1) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
         Seek(FileInfoFile,DirFileRecNum);
         Read(FileInfoFile,FileInfo);
@@ -878,7 +875,7 @@ BEGIN
     IF (SaveConfSystem) THEN
       NewCompTables;
     TempPause := (Cmd <> 'A');
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     NL;
     IF (NOT InWFCMenu) AND (NOT PYNQ('Search all file areas? ',0,TRUE)) THEN
@@ -886,13 +883,13 @@ BEGIN
     ELSE
     BEGIN
       FArea := 1;
-      WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Next) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
         ValFiles(FArea,Cmd,(Cmd = 'A'),(Cmd = 'P'));
         WKey;
         IF (Next) THEN
         BEGIN
-          Abort := FALSE;
+          AbortRG := FALSE;
           Next := FALSE;
         END;
         Inc(FArea);

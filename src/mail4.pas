@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
@@ -31,7 +28,7 @@ VAR
   SaveMsgArea: Integer;
 BEGIN
   SaveMsgArea := MsgArea;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   NumOnline := 0;
   TempStr := '';
@@ -56,7 +53,7 @@ BEGIN
   lRGLngStr(58,FALSE);
   Reset(MsgAreaFile);
   NumDone := 0;
-  WHILE (NumDone < (PageLength - AdjPageLen)) AND (MArea >= 1) AND (MArea <= NumMsgAreas) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (NumDone < (PageLength - AdjPageLen)) AND (MArea >= 1) AND (MArea <= NumMsgAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     LoadMsgArea(MArea);
     IF (ShowScan) THEN
@@ -99,9 +96,9 @@ BEGIN
   END;
   Close(MsgAreaFile);
   LastError := IOResult;
-  IF (NumOnline = 1) AND (NOT Abort) AND (NOT HangUp) THEN
+  IF (NumOnline = 1) AND (NOT AbortRG) AND (NOT HangUp) THEN
     PrintACR(TempStr)
-  ELSE IF (NumMAreas = 0) AND (NOT Abort) AND (NOT HangUp) THEN
+  ELSE IF (NumMAreas = 0) AND (NOT AbortRG) AND (NOT HangUp) THEN
     LRGLngStr(68,FALSE);
   {
   %LF^7No message areas!^1'
@@ -482,4 +479,4 @@ BEGIN
   LastCommandOvr := TRUE;
 END;
 
-END.
+END.

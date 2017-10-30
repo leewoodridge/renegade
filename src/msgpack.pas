@@ -1,6 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
 
 {$A+,B-,D-,E-,F+,I-,L-,N-,O+,R-,S+,V-}
 
@@ -152,7 +149,7 @@ BEGIN
 
   ReName(BrdF1,FN+'.DA3');                     { ReName .DAT to .DA3 }
 
-  IF (IOResult <> 0) THEN                      { Didn't work, abort  }
+  IF (IOResult <> 0) THEN                      { Didn't work, AbortRG  }
   BEGIN
     OhShit;
     Exit;
@@ -160,7 +157,7 @@ BEGIN
 
   ReName(BrdF2,FN+'.DAT');                     { ReName .DA2 to .DAT }
 
-  IF (IOResult <> 0) THEN                      { Didn't work, abort  }
+  IF (IOResult <> 0) THEN                      { Didn't work, AbortRG  }
   BEGIN
     OhShit;
     ReName(BrdF1,FN+'.DAT');                 { ReName .DA3 to .DAT }
@@ -169,7 +166,7 @@ BEGIN
 
   ReName(MsgHdrF1,FN+'.HD3');                  { ReName .HDR to .HD3 }
 
-  IF (IOResult <> 0) THEN                      { Didn't work, abort  }
+  IF (IOResult <> 0) THEN                      { Didn't work, AbortRG  }
   BEGIN
     OhShit;
     Erase(BrdF2);                            { Erase .DA2          }
@@ -179,7 +176,7 @@ BEGIN
 
   ReName(MsgHdrF2,FN+'.HDR');                  { ReName .HD2 to .HDR }
 
-  IF (IOResult <> 0) THEN                      { Didn't work, abort  }
+  IF (IOResult <> 0) THEN                      { Didn't work, AbortRG  }
   BEGIN
     OhShit;
     Erase(BrdF2);                            { Erase .DAT (new)    }
@@ -209,7 +206,7 @@ BEGIN
   Reset(MsgAreaFile);
   IF (IOResult <> 0) THEN
     Exit;
-  Abort := FALSE;
+  AbortRG := FALSE;
   FOR MArea := 0 TO (FileSize(MsgAreaFile) - 1) DO
   BEGIN
     Seek(MsgAreaFile,MArea);
@@ -217,7 +214,7 @@ BEGIN
     Print('^1Packing ^5'+TempBoard.Name+'^5 #'+IntToStr(MArea + 1));
     PackMessageArea(TempBoard.FIleName,TempBoard.MaxMsgs);
     WKey;
-    IF (Abort) THEN
+    IF (AbortRG) THEN
       Break;
   END;
   Close(MsgAreaFile);

@@ -1,8 +1,39 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
+{*******************************************************}
+{                                                       }
+{   Renegade BBS                                        }
+{                                                       }
+{   Copyright (c) 1990-2013 The Renegade Dev Team       }
+{   Copyleft  (ↄ) 2016 Renegade BBS                     }
+{                                                       }
+{   This file is part of Renegade BBS                   }
+{                                                       }
+{   Renegade is free software: you can redistribute it  }
+{   and/or modify it under the terms of the GNU General }
+{   Public License as published by the Free Software    }
+{   Foundation, either version 3 of the License, or     }
+{   (at your option) any later version.                 }
+{                                                       }
+{   Renegade is distributed in the hope that it will be }
+{   useful, but WITHOUT ANY WARRANTY; without even the  }
+{   implied warranty of MERCHANTABILITY or FITNESS FOR  }
+{   A PARTICULAR PURPOSE.  See the GNU General Public   }
+{   License for more details.                           }
+{                                                       }
+{   You should have received a copy of the GNU General  }
+{   Public License along with Renegade.  If not, see    }
+{   <http://www.gnu.org/licenses/>.                     }
+{                                                       }
+{*******************************************************}
+{   _______                                  __         }
+{  |   _   .-----.-----.-----.-----.---.-.--|  .-----.  }
+{  |.  l   |  -__|     |  -__|  _  |  _  |  _  |  -__|  }
+{  |.  _   |_____|__|__|_____|___  |___._|_____|_____|  }
+{  |:  |   |                 |_____|                    }
+{  |::.|:. |                                            }
+{  `--- ---'                                            }
+{*******************************************************}
 
-{$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
+{$i Renegade.Common.Defines.inc}
 
 UNIT SysOp10;
 
@@ -141,7 +172,7 @@ VAR
         REPEAT
           IF (Cmd1 <> '?') THEN
           BEGIN
-            Abort := FALSE;
+            AbortRG := FALSE;
             Next := FALSE;
             Print('%CL^5Topic choice #'+IntToStr(RecNum)+' of '+IntToStr(Topic.ChoiceNumber));
             NL;
@@ -220,14 +251,14 @@ VAR
   BEGIN
     IF (RecNumToList1 < 1) OR (RecNumToList1 > Topic.ChoiceNumber) THEN
       RecNumToList1 := 1;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     CLS;
     PrintACR('^0##^4:^3Answer^4:^3Choice');
     PrintACR('^4==:======:=====================================================================');
     NumDone := 0;
     WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= Topic.ChoiceNumber)
-          AND (NOT Abort) AND (NOT HangUp) DO
+          AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       PrintACR('^0'+PadRightInt(RecNumToList1,2)+
                ' ^3'+PadRightInt(Topic.Answers[RecNumToList1].NumVotedAnswer,6)+
@@ -365,7 +396,7 @@ VAR
       REPEAT
         IF (Cmd1 <> '?') THEN
         BEGIN
-          Abort := FALSE;
+          AbortRG := FALSE;
           Next := FALSE;
           CLS;
           IF (Editing) THEN
@@ -499,9 +530,9 @@ VAR
         CheckTopic(TempTopic1,1,2,Ok);
         IF (NOT OK) THEN
           IF (NOT PYNQ('%LFContinue inserting topic? ',0,TRUE)) THEN
-            Abort := TRUE;
-      UNTIL (OK) OR (Abort) OR (HangUp);
-      IF (NOT Abort) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
+            AbortRG := TRUE;
+      UNTIL (OK) OR (AbortRG) OR (HangUp);
+      IF (NOT AbortRG) AND (PYNQ('%LFIs this what you want? ',0,FALSE)) THEN
       BEGIN
         Print('%LF[> Inserting voting topic record ...');
         Seek(VotingFile,FileSize(VotingFile));
@@ -685,7 +716,7 @@ VAR
   BEGIN
     IF (RecNumToList1 < 1) OR (RecNumToList1 > NumVotes) THEN
       RecNumToList1 := 1;
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     CLS;
     PrintACR('^0##^4:^3Votes^4:^3Topic');
@@ -693,7 +724,7 @@ VAR
     Reset(VotingFile);
     NumDone := 0;
     WHILE (NumDone < (PageLength - 5)) AND (RecNumToList1 >= 1) AND (RecNumToList1 <= NumVotes)
-          AND (NOT Abort) AND (NOT HangUp) DO
+          AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(VotingFile,(RecNumToList1 - 1));
       Read(VotingFile,Topic);

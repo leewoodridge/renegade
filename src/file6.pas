@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
 UNIT File6;
@@ -104,7 +100,7 @@ VAR
   ProtocolNumber,
   SaveLastDirFileRecNum,
   ToXfer: Integer;
-  ReturnCode: SmallInt;
+  ReturnCode: Byte;
   RecNum,
   RecNum1,
   TransferTime: LongInt;
@@ -806,7 +802,7 @@ BEGIN
     Print('The batch download queue is empty.');
     Exit;
   END;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   NL;
   PrintACR('^4###:FileName.Ext Area  Pts    Bytes         hh:mm:ss^1');
@@ -815,7 +811,7 @@ BEGIN
   Reset(BatchDLFile);
   FileNumToList := 1;
   RecNum := 1;
-  WHILE (RecNum <= FileSize(BatchDLFile)) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (RecNum <= FileSize(BatchDLFile)) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     Seek(BatchDLFile,(RecNum - 1));
     Read(BatchDLFile,BatchDL);
@@ -992,4 +988,4 @@ BEGIN
   END;
 END;
 
-END.
+END.

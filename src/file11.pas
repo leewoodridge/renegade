@@ -1,7 +1,3 @@
-{$IFDEF WIN32}
-{$I DEFINES.INC}
-{$ENDIF}
-{$MODE TP}
 {$A+,B-,D+,E-,F+,I-,L+,N-,O+,R-,S+,V-}
 
 UNIT File11;
@@ -47,7 +43,8 @@ USES
   File1,
   File10,
   Menus,
-  TimeFunc;
+  TimeFunc,
+  SysUtils;
 
 TYPE
   DownLoadArrayType = ARRAY [0..99] OF SmallInt;
@@ -127,12 +124,12 @@ BEGIN
                     Inc(Counter1);
                   END;
                 s1 := '';
-                Counter := Counter + Length(s2);
+                {Counter := Counter + Length(s2);}
                 s2 := '';
-                Counter2 := Length(s);
+                {Counter2 := Length(s);}
               END;
             END;
-            Counter := Counter + Length(s2);
+            {Counter := Counter + Length(s2);}
           END
           ELSE IF (StrToInt(s1) >= 0) AND (StrToInt(s1) <= 99) THEN
           BEGIN
@@ -218,13 +215,13 @@ BEGIN
                       MemCmd^[CmdToExec].NodeActivityDesc);
       END;
     UNTIL (CmdToExec = 0) OR (Done) OR (HangUp);
-    Abort := FALSE;
+    AbortRG := FALSE;
     Next := FALSE;
     CASE TFilePrompt OF
       1 : ;
       2 : BEGIN
-            Print('%LFListing aborted.');
-            Abort := TRUE;
+            Print('%LFListing AbortRGed.');
+            AbortRG := TRUE;
           END;
       3 : BEGIN
             Print('%LFFile area skipped.');
@@ -243,7 +240,7 @@ BEGIN
                 IF (NOT BatchDLQueuedFiles([])) THEN
                 BEGIN
                   Counter := 0;
-                  WHILE (Counter <= 99) AND (NOT Abort) AND (NOT HangUp) DO
+                  WHILE (Counter <= 99) AND (NOT AbortRG) AND (NOT HangUp) DO
                   BEGIN
                     IF (DLArray[Counter] <> -1) THEN
                       IF (FArray[DLArray[Counter]].FArrayDirFileRecNum = -1) THEN
@@ -265,8 +262,8 @@ BEGIN
                         Read(FileInfoFile,FileInfo);
                         TransferFlags := [IsCheckRatio];
                         DLX(FileInfo,FArray[DLArray[Counter]].FArrayDirFileRecNum,TransferFlags);
-                        IF (IsKeyboardAbort IN TransferFlags) THEN
-                          Abort := TRUE;
+                        IF (IsKeyboardAbortRG IN TransferFlags) THEN
+                          AbortRG := TRUE;
                         Close(FileInfoFile);
                         Close(ExtInfoFile);
                         FileArea := SaveFileArea;
@@ -277,8 +274,8 @@ BEGIN
                       END;
                     Inc(Counter);
                   END;
-                  IF (Abort) THEN
-                    Abort := FALSE;
+                  IF (AbortRG) THEN
+                    AbortRG := FALSE;
                   NL;
                 END;
           END;
@@ -287,7 +284,7 @@ BEGIN
               IF (DLInTime) THEN
               BEGIN
                 Counter := 0;
-                WHILE (Counter <= 99) AND (NOT Abort) AND (NOT HangUp) DO
+                WHILE (Counter <= 99) AND (NOT AbortRG) AND (NOT HangUp) DO
                 BEGIN
                   IF (DLArray[Counter] <> -1) THEN
                     IF (FArray[DLArray[Counter]].FArrayDirFileRecNum = -1) THEN
@@ -309,8 +306,8 @@ BEGIN
                       Read(FileInfoFile,FileInfo);
                       TransferFlags := [IsCheckRatio,lIsAddDLBatch];
                       DLX(FileInfo,FArray[DLArray[Counter]].FArrayDirFileRecNum,TransferFlags);
-                      IF (IsKeyboardAbort IN TransferFlags) THEN
-                        Abort := TRUE;
+                      IF (IsKeyboardAbortRG IN TransferFlags) THEN
+                        AbortRG := TRUE;
                       Close(FileInfoFile);
                       Close(ExtInfoFile);
                       FileArea := SaveFileArea;
@@ -321,8 +318,8 @@ BEGIN
                     END;
                   Inc(Counter);
                 END;
-                IF (Abort) THEN
-                  Abort := FALSE;
+                IF (AbortRG) THEN
+                  AbortRG := FALSE;
                 NL;
               END;
           END;
@@ -330,7 +327,7 @@ BEGIN
             IF GetDLArray(DLArray,Length(CmdStr)) THEN
             BEGIN
               Counter := 0;
-              WHILE (Counter <= 99) AND (NOT Abort) AND (NOT HangUp) DO
+              WHILE (Counter <= 99) AND (NOT AbortRG) AND (NOT HangUp) DO
               BEGIN
                 IF (DLArray[Counter] <> -1) THEN
                   IF (FArray[DLArray[Counter]].FArrayDirFileRecNum = -1) THEN
@@ -369,8 +366,8 @@ BEGIN
                   END;
                 Inc(Counter);
               END;
-              IF (Abort) THEN
-                Abort := FALSE;
+              IF (AbortRG) THEN
+                AbortRG := FALSE;
               NL;
             END;
           END;
@@ -385,7 +382,7 @@ BEGIN
             IF GetDLArray(DLArray,Length(CmdStr)) THEN
             BEGIN
               Counter := 0;
-              WHILE (Counter <= 99) AND (NOT Abort) AND (NOT HangUp) DO
+              WHILE (Counter <= 99) AND (NOT AbortRG) AND (NOT HangUp) DO
               BEGIN
                 IF (DLArray[Counter] <> -1) THEN
                   IF (FArray[DLArray[Counter]].FArrayDirFileRecNum = -1) THEN
@@ -407,7 +404,7 @@ BEGIN
                     Read(FileInfoFile,FileInfo);
                     EditFile(FArray[DLArray[Counter]].FArrayDirFileRecNum,Cmd,FALSE,FALSE);
                     IF (Cmd = 'Q') THEN
-                      Abort := TRUE
+                      AbortRG := TRUE
                     ELSE IF (Cmd = 'P') THEN
                     BEGIN
                       Counter1 := Counter;
@@ -430,8 +427,8 @@ BEGIN
                   END;
                 Inc(Counter);
               END;
-              IF (Abort) THEN
-                Abort := FALSE;
+              IF (AbortRG) THEN
+                AbortRG := FALSE;
               IF (Next) THEN
                 Next := FALSE;
               IF (Cmd <> 'Q') THEN
@@ -439,8 +436,8 @@ BEGIN
             END;
           END;
     END;
-  UNTIL (TFilePrompt = 1) OR (Abort) OR (Next) OR (HangUp);
-  IF (TFilePrompt = 1) AND (NOT Abort) AND (NOT Next) AND (NOT HangUp) THEN
+  UNTIL (TFilePrompt = 1) OR (AbortRG) OR (Next) OR (HangUp);
+  IF (TFilePrompt = 1) AND (NOT AbortRG) AND (NOT Next) AND (NOT HangUp) THEN
     NL;
   CurMenu := SaveMenu;
   NewMenuToLoad := TRUE;
@@ -473,15 +470,15 @@ BEGIN
   CLS;
   IF (NOT General.FileCreditRatio) THEN
   BEGIN
-    Output_File_Stuff('ÚÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿');
-    Output_File_Stuff('³##³ File Name  ³   Size   ³ Description  '+PadLeftStr(s,34)+'  ³');
-    Output_File_Stuff('ÀÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ');
+    Output_File_Stuff('ÚÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?);
+    Output_File_Stuff('?##? File Name  ?   Size   ? Description  '+PadLeftStr(s,34)+'  ?);
+    Output_File_Stuff('ÀÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?);
   END
   ELSE
   BEGIN
-    Output_File_Stuff('ÚÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿');
-    Output_File_Stuff('³##³ÿFile Name  ³Pts³ Size ³ Description  '+PadLeftStr(s,34)+'  ³');
-    Output_File_Stuff('ÀÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ');
+    Output_File_Stuff('ÚÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?);
+    Output_File_Stuff('?##?ÿFile Name  ?Pts? Size ? Description  '+PadLeftStr(s,34)+'  ?);
+    Output_File_Stuff('ÀÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?);
   END;
   *)
 
@@ -555,21 +552,21 @@ BEGIN
   TempStr := TempStr + ' '+TempStr1;
 
 
-  IF (NOT NormalPause) AND (NOT Next) AND (NOT Abort) AND (NOT HangUp) THEN
+  IF (NOT NormalPause) AND (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) THEN
     DisplayFileAreaHeader;
 
   Inc(Lines);
 
-  IF (NOT Next) AND (NOT Abort) AND (NOT HangUp) THEN
+  IF (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) THEN
     Output_File_Stuff(TempStr);
-  IF (NOT NormalPause) AND (NOT Next) AND (NOT Abort) AND (NOT HangUp) THEN
+  IF (NOT NormalPause) AND (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) THEN
     Pause_Files;
 
   IF (FileInfo.VPointer <> -1) THEN
   BEGIN
     LoadVerbArray(FileInfo,ExtendedArray,NumExtDesc);
     LineNum := 1;
-    WHILE (LineNum <= NumExtDesc) AND (NOT Next) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (LineNum <= NumExtDesc) AND (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       TempStr1 := ExtendedArray[LineNum];
       IF (SearchString <> '') THEN
@@ -580,15 +577,15 @@ BEGIN
       ELSE
         TempStr := PadLeftStr('',28)+''+TempStr1+'';
 
-      IF (NOT NormalPause) AND (NOT Next) AND (NOT Abort) AND (NOT HangUp) THEN
+      IF (NOT NormalPause) AND (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) THEN
         DisplayFileAreaHeader;
 
       Inc(Lines);
 
-      IF (NOT Next) AND (NOT Abort) AND (NOT HangUp) THEN
+      IF (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) THEN
         Output_File_Stuff(TempStr);
 
-      IF (NOT NormalPause) AND (NOT Next) AND (NOT Abort) AND (NOT HangUp) THEN
+      IF (NOT NormalPause) AND (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) THEN
         Pause_Files;
       Inc(LineNum);
     END;
@@ -616,14 +613,14 @@ BEGIN
   IF (FAShowName IN MemFileArea.FAFlags) OR (FAShowDate IN MemFileArea.FAFlags) THEN
   BEGIN
 
-    IF (NOT NormalPause) AND (NOT Next) AND (NOT Abort) AND (NOT HangUp) THEN
+    IF (NOT NormalPause) AND (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) THEN
       DisplayFileAreaHeader;
 
     Inc(Lines);
 
-    IF (NOT Next) AND (NOT Abort) AND (NOT HangUp) THEN
+    IF (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) THEN
       Output_File_Stuff(TempStr);
-    IF (NOT NormalPause) AND (NOT Next) AND (NOT Abort) AND (NOT HangUp) THEN
+    IF (NOT NormalPause) AND (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) THEN
       Pause_Files;
   END;
 
@@ -634,14 +631,14 @@ BEGIN
     ELSE
       TempStr := PadLeftStr('',28)+'^8>^7'+'>> ^3'+'You ^5'+'MUST RESUME^3'+' this file to receive credit';
 
-    IF (NOT NormalPause) AND (NOT Next) AND (NOT Abort) AND (NOT HangUp) THEN
+    IF (NOT NormalPause) AND (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) THEN
       DisplayFileAreaHeader;
 
     Inc(Lines);
 
-    IF (NOT Next) AND (NOT Abort) AND (NOT HangUp) THEN
+    IF (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) THEN
       Output_File_Stuff(TempStr);
-    IF (NOT NormalPause) AND (NOT Next) AND (NOT Abort) AND (NOT HangUp) THEN
+    IF (NOT NormalPause) AND (NOT Next) AND (NOT AbortRG) AND (NOT HangUp) THEN
       Pause_Files;
   END;
 END;
@@ -662,7 +659,7 @@ BEGIN
     LIL := 0;
     CLS;
     Prompt('^1Scanning ^5'+MemFileArea.AreaName+' #'+IntToStr(CompFileArea(FArea,0))+'^1 ...');
-    WHILE (DirFileRecNum <> -1) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (DirFileRecNum <> -1) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(FileInfoFile,DirFileRecNum);
       Read(FileInfoFile,FileInfo);
@@ -685,7 +682,7 @@ BEGIN
         Found := TRUE;
       END;
       NRecNo(FileInfo,DirFileRecNum);
-      IF (DirFileRecNum = -1) AND (Found) AND (Lines > FileRedisplayLines) AND (NOT Abort) AND (NOT HangUp) THEN
+      IF (DirFileRecNum = -1) AND (Found) AND (Lines > FileRedisplayLines) AND (NOT AbortRG) AND (NOT HangUp) THEN
       BEGIN
         Lines := PageLength;
         Pause_Files;
@@ -720,11 +717,11 @@ BEGIN
   GetFileName(FName);
   IF (FName = '') THEN
   BEGIN
-    Print('%LFAborted.');
+    Print('%LFAbortRGed.');
     Exit;
   END;
   SaveFileArea := FileArea;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   InitFArray(FArray);
   FArrayRecNum := 0;
@@ -733,7 +730,7 @@ BEGIN
   IF (ConfSystem <> SaveConfSystem) THEN
     NewCompTables;
   FArea := 1;
-  WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     SearchFileAreaSpec(FArea,FName,FArrayRecNum);
     WKey;
@@ -752,7 +749,7 @@ PROCEDURE ListFileSpec(FName: Str12);
 VAR
   FArrayRecNum: Byte;
 BEGIN
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   InitFArray(FArray);
   FArrayRecNum := 0;
@@ -791,7 +788,7 @@ BEGIN
     LIL := 0;
     CLS;
     Prompt('^1Scanning ^5'+MemFileArea.AreaName+' #'+IntToStr(CompFileArea(FArea,0))+'^1 ...');
-    WHILE (DirFileRecNum <> -1) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (DirFileRecNum <> -1) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       Seek(FileInfoFile,DirFileRecNum);
       Read(FileInfoFile,FileInfo);
@@ -803,7 +800,7 @@ BEGIN
         BEGIN
           LoadVerbArray(FileInfo,ExtendedArray,NumExtDesc);
           LineNum := 1;
-          WHILE (LineNum <= NumExtDesc) AND (NOT SearchStringFound) AND (NOT Abort) AND (NOT HangUp) DO
+          WHILE (LineNum <= NumExtDesc) AND (NOT SearchStringFound) AND (NOT AbortRG) AND (NOT HangUp) DO
           BEGIN
             IF (Pos(SearchString,AllCaps(ExtendedArray[LineNum])) <> 0) THEN
               SearchStringFound := TRUE;
@@ -831,7 +828,7 @@ BEGIN
         END;
       END;
       NRecNo(FileInfo,DirFileRecNum);
-      IF (DirFileRecNum = -1) AND (Found) AND (Lines > FileRedisplayLines) AND (NOT Abort) AND (NOT HangUp) THEN
+      IF (DirFileRecNum = -1) AND (Found) AND (Lines > FileRedisplayLines) AND (NOT AbortRG) AND (NOT HangUp) THEN
       BEGIN
         Lines := PageLength;
         Pause_Files;
@@ -866,10 +863,10 @@ BEGIN
   Input(SearchString,20);
   IF (SearchString = '') THEN
   BEGIN
-    Print('%LFAborted.');
+    Print('%LFAbortRGed.');
     Exit;
   END;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   InitFArray(FArray);
   FArrayRecNum := 0;
@@ -884,7 +881,7 @@ BEGIN
     IF (ConfSystem <> SaveConfSystem) THEN
       NewCompTables;
     FArea := 1;
-    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
+    WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
     BEGIN
       SearchFileAreaDescription(FArea,SearchString,FArrayRecNum);
       WKey;
@@ -918,7 +915,7 @@ BEGIN
       LIL := 0;
       CLS;
       Prompt('^1Scanning ^5'+MemFileArea.AreaName+' #'+IntToStr(CompFileArea(FileArea,0))+'^1 ...');
-      WHILE (DirFileRecNum <> -1) AND (NOT Abort) AND (NOT HangUp) DO
+      WHILE (DirFileRecNum <> -1) AND (NOT AbortRG) AND (NOT HangUp) DO
       BEGIN
 
         Seek(FileInfoFile,DirFileRecNum);
@@ -944,7 +941,7 @@ BEGIN
           Found := TRUE;
         END;
         NRecNo(FileInfo,DirFileRecNum);
-        IF (DirFileRecNum = -1) AND (Found) AND (Lines > FileRedisplayLines) AND (NOT Abort) AND (NOT HangUp) THEN
+        IF (DirFileRecNum = -1) AND (Found) AND (Lines > FileRedisplayLines) AND (NOT AbortRG) AND (NOT HangUp) THEN
         BEGIN
           Lines := PageLength;
           Pause_Files;
@@ -966,7 +963,7 @@ VAR
   FArea: Integer;
 BEGIN
   FArea := 1;
-  WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT Abort) AND (NOT HangUp) DO
+  WHILE (FArea >= 1) AND (FArea <= NumFileAreas) AND (NOT AbortRG) AND (NOT HangUp) DO
   BEGIN
     NewFileScan(FArea,TRUE,FArrayRecNum);
     IF (TextRec(NewFilesF).Mode = FMOutPut) THEN
@@ -982,7 +979,7 @@ VAR
   SaveFileArea: Integer;
 BEGIN
   SaveFileArea := FileArea;
-  Abort := FALSE;
+  AbortRG := FALSE;
   Next := FALSE;
   InitFArray(FArray);
   FArrayRecNum := 0;
@@ -1217,7 +1214,7 @@ BEGIN
   InputPath('%LF^4Enter file path for temporary directory (^5End with a ^4"^5\^4"):%LF^4:',TempPath,TRUE,TRUE,Changed);
   IF (TempPath = '') THEN
   BEGIN
-    Print('%LFAborted.');
+    Print('%LFAbortRGed.');
     Exit;
   END;
   IF (NOT ExistDir(TempPath)) THEN
@@ -1246,4 +1243,4 @@ BEGIN
   SysOpLog('Created temporary directory #'+IntToStr(FileArea)+' in "'+TempPath+'"');
 END;
 
-END.
+END.
